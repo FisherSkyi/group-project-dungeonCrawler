@@ -36,7 +36,7 @@ public enum EntityFactory {
         world.addComponent(component: VelocityComponent(), to: entity)
         world.addComponent(component: InputComponent(), to: entity)
         world.addComponent(component: SpriteComponent(textureName: textureName), to: entity)
-        world.addComponent(component: PlayerTag(), to: entity)
+        world.addComponent(component: PlayerTagComponent(), to: entity)
         
         return entity
     }

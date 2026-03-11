@@ -45,7 +45,7 @@ public final class RenderSystem: System {
             // We do NOT animate here — that would introduce lag. Direct assignment
             // only; SpriteKit actions / animations layer on top if needed.
             node.position = transform.cgPoint
-            node.zRotation = CGFloat(transform.rotation)
+            node.zRotation = 0
             node.xScale    = CGFloat(transform.scale)
             node.yScale    = CGFloat(transform.scale)
 
