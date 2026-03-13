@@ -42,11 +42,20 @@ public final class RenderSystem: System {
             let node = nodeFor(entity: entity, sprite: sprite, in: scene)
 
             // Sync position and rotation from ECS → SpriteKit.
-            // We do NOT animate here — that would introduce lag. Direct assignment
-            // only; SpriteKit actions / animations layer on top if needed.
+      
             node.position = transform.cgPoint
             node.zRotation = 0
-            node.xScale    = CGFloat(transform.scale)
+            
+            var flipFactor: CGFloat = node.xScale < 0 ? -1.0 : 1.0
+            if let velocity = world.getComponent(type: VelocityComponent.self, for: entity) {
+                if velocity.linear.x > 0 {
+                    flipFactor = 1.0  // Moving right
+                } else if velocity.linear.x < 0 {
+                    flipFactor = -1.0 // Moving left
+                }
+            }
+            
+            node.xScale    = CGFloat(transform.scale) * flipFactor
             node.yScale    = CGFloat(transform.scale)
 
             // Sync tint.
