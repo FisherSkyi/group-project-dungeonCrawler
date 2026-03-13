@@ -28,11 +28,12 @@ public enum EntityFactory {
     public static func makePlayer(
         in world: World,
         at position: SIMD2<Float>,
-        textureName: String = "knight" // set to knight for now
+        textureName: String = "knight", // set to knight for now
+        scale: Float = 1
     ) -> Entity {
         let entity = world.createEntity()
         
-        world.addComponent(component: TransformComponent(position: position, rotation: 0, scale: 1), to: entity)
+        world.addComponent(component: TransformComponent(position: position, rotation: 0, scale: scale), to: entity)
         world.addComponent(component: VelocityComponent(), to: entity)
         world.addComponent(component: InputComponent(), to: entity)
         world.addComponent(component: SpriteComponent(textureName: textureName), to: entity)

@@ -34,7 +34,7 @@ public final class MovementSystem: System {
             and: VelocityComponent.self
         )
 
-        for (entity, input, velocity) in movable {
+        for (entity, input, _) in movable {
             world.modifyComponent(type: VelocityComponent.self, for: entity) { velocity in
                 velocity.linear = input.moveDirection * defaultMoveSpeed
             }
@@ -46,9 +46,6 @@ public final class MovementSystem: System {
                 
                 // Integrate velocity into position.
                 transform.position += velocity.linear * dt
-                
-                transform.position.x = floor(transform.position.x)
-                transform.position.y = floor(transform.position.y)
                 
                 transform.position.x = max(worldBounds.minX, min(worldBounds.maxX, transform.position.x))
                 transform.position.y = max(worldBounds.minY, min(worldBounds.maxY, transform.position.y))
