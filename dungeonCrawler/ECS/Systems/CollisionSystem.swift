@@ -92,5 +92,11 @@ public final class CollisionSystem: System {
     }
 
 
-    
+    private func resolveCollision(entityA: Entity, entityB: Entity, mtv: SIMD2<Float>, world: World) {
+        // For now, just move A out of collision. 
+        // TODO: add mass/velocity and do proper physics response.
+        world.modifyComponent(type: TransformComponent.self, for: entityA) { transform in
+            transform.position += mtv
+        }
+    }
 }
