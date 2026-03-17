@@ -85,7 +85,7 @@ class GameScene: SKScene {
         let enemyScale = shortSide * 0.04 / 48.0   // follow knight scale for now
         EntityFactory.makePlayer(in: world, at: .zero, scale: knightScale)
         EntityFactory.makeEnemy(in: world, at: SIMD2(100, 100), type:
-                .Charger, scale: enemyScale * EnemyType.Charger.scale)
+                .charger, scale: enemyScale * EnemyType.charger.scale)
     }
 
     // MARK: - Touch forwarding
