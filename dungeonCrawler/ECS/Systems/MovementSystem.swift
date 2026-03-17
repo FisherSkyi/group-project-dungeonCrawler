@@ -42,10 +42,20 @@ public final class MovementSystem: System {
             else { continue }
 
             world.modifyComponent(type: TransformComponent.self, for: entity) { transform in
-                
+
                 // Integrate velocity into position.
                 transform.position += velocity.linear * dt
-                
+
+                transform.position.x = max(worldBounds.minX, min(worldBounds.maxX, transform.position.x))
+                transform.position.y = max(worldBounds.minY, min(worldBounds.maxY, transform.position.y))
+            }
+        }
+
+        // Integrate velocity for enemies (velocity is set by EnemyAISystem)
+        let enemyMovable = world.entities(with: EnemyStateComponent.self, and: VelocityComponent.self)
+        for (entity, _, velocity) in enemyMovable {
+            world.modifyComponent(type: TransformComponent.self, for: entity) { transform in
+                transform.position += velocity.linear * dt
                 transform.position.x = max(worldBounds.minX, min(worldBounds.maxX, transform.position.x))
                 transform.position.y = max(worldBounds.minY, min(worldBounds.maxY, transform.position.y))
             }

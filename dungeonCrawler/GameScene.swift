@@ -72,6 +72,7 @@ class GameScene: SKScene {
 
     private func setupSystems() {
         systemManager.register(InputSystem(inputProvider: touchInput))
+        systemManager.register(EnemyAISystem())
         systemManager.register(HealthSystem())
         systemManager.register(MovementSystem())
         systemManager.register(CollisionSystem())
@@ -85,8 +86,8 @@ class GameScene: SKScene {
         let knightScale = shortSide * 0.04 / 48.0   // assumes 48pt base texture size
         let enemyScale = shortSide * 0.04 / 48.0   // follow knight scale for now
         EntityFactory.makePlayer(in: world, at: .zero, scale: knightScale)
-        EntityFactory.makeEnemy(in: world, at: SIMD2(100, 100), type:
-                .charger, scale: enemyScale * EnemyType.charger.scale)
+        EntityFactory.makeEnemy(in: world, at: SIMD2(100, 100), type: .charger, baseScale: enemyScale)
+        EntityFactory.makeEnemy(in: world, at: SIMD2(200, 200), type: .tower, baseScale: enemyScale)
     }
 
     // MARK: - Touch forwarding
