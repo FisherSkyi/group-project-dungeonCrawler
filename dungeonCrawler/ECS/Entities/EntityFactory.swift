@@ -73,14 +73,12 @@ public enum EntityFactory {
         let entity = world.createEntity()
         let finalScale = baseScale * type.scale
 
-        world.addComponent(component: TransformComponent(position: position, rotation: 0,
-                                                         scale: finalScale), to: entity)
+        world.addComponent(component: TransformComponent(position: position, rotation: 0, scale: finalScale), to: entity)
         world.addComponent(component: SpriteComponent(textureName: type.textureName), to: entity)
         world.addComponent(component: EnemyTagComponent(enemyType: type), to: entity)
         world.addComponent(component: VelocityComponent(), to: entity)
         world.addComponent(component: EnemyStateComponent(), to: entity)
-        world.addComponent(component: CollisionBoxComponent(size: SIMD2(48 * finalScale, 48 * finalScale)),
-                                                            to: entity)
+        world.addComponent(component: CollisionBoxComponent(size: SIMD2(48 * finalScale, 48 * finalScale)), to: entity)
 
         return entity
     }
