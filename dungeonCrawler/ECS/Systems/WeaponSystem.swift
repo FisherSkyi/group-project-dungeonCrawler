@@ -13,18 +13,18 @@ class WeaponSystem: System {
     func update(deltaTime: Foundation.TimeInterval, world: World) {
         self.gameTime += Float(deltaTime)
 
-        for (weaponEntity, _, ownerComponent) in world.entities(with: WeaponComponent.self, and: OwnerComponent.self) {
+        for (weaponEntity, weaponComponent, ownerComponent) in world.entities(with: WeaponComponent.self, and: OwnerComponent.self) {
             let ownerEntity = ownerComponent.ownerEntity
-            guard let ownerTransform = world.getComponent(type: TransformComponent.self, for: ownerEntity) else { continue }
+            guard let ownerTransform = world.getComponent(type: TransformComponent.self, for: ownerEntity),
+                  let ownerInput = world.getComponent(type: InputComponent.self, for: ownerEntity) else { continue }
+
             let ownerVelocity = world.getComponent(type: VelocityComponent.self, for: ownerEntity)
-            // Determine facing direction from owner velocity; default to current weapon xScale
-            let facingRight: Bool
+
+            // offset from player to center of weapon's x corr flip if needed
+            var facingRight: Bool = true
             if let vx = ownerVelocity?.linear.x, vx != 0 {
                 facingRight = vx > 0
-            } else {
-                facingRight = true // fallback — ideally persist last direction
             }
-
             let mirroredOffset = SIMD2<Float>(
                 facingRight ? ownerComponent.offset.x : -ownerComponent.offset.x,
                 ownerComponent.offset.y
@@ -38,8 +38,33 @@ class WeaponSystem: System {
             world.modifyComponent(type: VelocityComponent.self, for: weaponEntity) { vel in
                 vel.linear.x = ownerVelocity?.linear.x ?? vel.linear.x
             }
+            
+            if ownerInput.isShooting {
+                let isReadyToFire: Bool = (gameTime - weaponComponent.lastFiredAt) >= Float(weaponComponent.coolDownInterval)
+                let aimDirection = ownerInput.aimDirection
+                if isReadyToFire {
+                    world.modifyComponent(type: WeaponComponent.self, for: weaponEntity, ) { weapon in
+                        weapon.lastFiredAt = gameTime
+                    }
+                    // Only for projectile weapon now
+                    // TODO: replace speed
+                    spawnProjectile(from: ownerTransform.position, aimAt: aimDirection, speed: 300, owner: ownerEntity, in: world)
+                }
+            }
         }
-
-
+    }
+    
+    private func spawnProjectile(from position: SIMD2<Float>,
+                                 aimAt direction: SIMD2<Float>,
+                                 speed: Float,
+                                 owner: Entity,
+                                 in world: World) {
+        let projectile = world.createEntity()
+        world.addComponent(component: TransformComponent(position: position, scale: 0.2), to: projectile)
+        world.addComponent(component: VelocityComponent(linear: direction * speed), to: projectile)
+        world.addComponent(component: SpriteComponent(textureName: "bullet", zLayer: 3), to: projectile)
+        world.addComponent(component: ProjectileComponent(
+            velocity: direction * speed, damage: 10, owner: owner, effectiveRange: 400
+        ), to: projectile)
     }
 }

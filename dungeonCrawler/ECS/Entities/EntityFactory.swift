@@ -90,7 +90,8 @@ public enum EntityFactory {
         ownedBy player: Entity,
         textureName: String = "handgun",
         offset: SIMD2<Float> = .zero,
-        scale: Float = 1
+        scale: Float = 1,
+        time: Float
     ) -> Entity {
         let entity = world.createEntity()
         let startPos = world.getComponent(type: TransformComponent.self, for: player)?.position ?? .zero
@@ -102,7 +103,8 @@ public enum EntityFactory {
             type: .handgun,
             manaCost: 10,
             attackSpeed: 1,
-            coolDownInterval: TimeInterval(1)
+            coolDownInterval: TimeInterval(1),
+            lastFiredAt: time
         ), to: entity)
         return entity
     }
