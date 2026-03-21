@@ -12,14 +12,21 @@ public final class ProjectileSystem: System {
     public let priority: Int = 60 // After weapon spawn new projectiles
     public func update(deltaTime: Double, world: World) {
         let dt = Float(deltaTime)
-        for (projectileEntity, _, velocityComponent, _) in world.entities(with: ProjectileComponent.self, and: VelocityComponent.self, and: TransformComponent.self) {
+        for (projectileEntity, _, velocityComponent, _, _) in world.entities(
+            with: ProjectileComponent.self,
+            and: VelocityComponent.self,
+            and: TransformComponent.self,
+            and: EffectiveRangeComponent.self) {
             world.modifyComponent(type: TransformComponent.self, for: projectileEntity) { transform in
                 transform.position += velocityComponent.linear * dt
             }
-            world.modifyComponent(type: ProjectileComponent.self, for: projectileEntity) { pComponent in
-                pComponent.effectiveRange -= simd_length(velocityComponent.linear) * dt
+            let distanceTraveled = simd_length(velocityComponent.linear) * dt
+            var remainingRange: Float = .greatestFiniteMagnitude
+            world.modifyComponent(type: EffectiveRangeComponent.self, for: projectileEntity) { rangeComponent in
+                rangeComponent.value.current -= distanceTraveled
+                remainingRange = rangeComponent.value.current
             }
-            if let p = world.getComponent(type: ProjectileComponent.self, for: projectileEntity), p.effectiveRange <= 0 {
+            if remainingRange <= 0 {
                 world.destroyEntity(entity: projectileEntity)
             }
         }

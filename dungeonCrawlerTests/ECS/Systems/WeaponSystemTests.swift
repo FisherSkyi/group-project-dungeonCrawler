@@ -41,11 +41,14 @@ final class WeaponSystemTests: XCTestCase {
             aimDirection: aimDirection,
             isShooting: isShooting
         ), to: owner)
+        world.addComponent(component: FacingComponent(facing: ownerVelocity.x < 0 ? .left : .right), to: owner)
 
         let weapon = world.createEntity()
         world.addComponent(component: TransformComponent(position: ownerPosition + offset), to: weapon)
         world.addComponent(component: VelocityComponent(), to: weapon)
         world.addComponent(component: OwnerComponent(ownerEntity: owner, offset: offset), to: weapon)
+        let facingOfOwner = world.getComponent(type: FacingComponent.self, for: owner)!.facing
+        world.addComponent(component: FacingComponent(facing: facingOfOwner), to: weapon)
         world.addComponent(component: WeaponComponent(
             type: .handgun,
             manaCost: 0,
@@ -61,7 +64,7 @@ final class WeaponSystemTests: XCTestCase {
         world.entities(with: ProjectileComponent.self)
     }
 
-    // Position, mirrow offset
+    // Position, mirror offset
 
     func testWeaponPositionFollowsOwnerFacingRight() {
         let (_, weapon) = makeWeaponWithOwner(
@@ -314,7 +317,7 @@ final class WeaponSystemTests: XCTestCase {
 
         system.update(deltaTime: 1.0, world: world)
 
-        let projectileComp = world.getComponent(type: ProjectileComponent.self, for: getSpawnedProjectiles()[0])!
-        XCTAssertGreaterThan(projectileComp.effectiveRange, 0)
+        let rangeComp = world.getComponent(type: EffectiveRangeComponent.self, for: getSpawnedProjectiles()[0])!
+        XCTAssertGreaterThan(rangeComp.value.current, 0)
     }
 }

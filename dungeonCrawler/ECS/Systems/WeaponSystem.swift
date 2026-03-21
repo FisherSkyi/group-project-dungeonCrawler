@@ -6,49 +6,64 @@ public final class WeaponSystem: System {
     
     private var gameTime: Float
 
-    init() {
+    public init() {
         self.gameTime = 0
     }
 
     public func update(deltaTime: Foundation.TimeInterval, world: World) {
         self.gameTime += Float(deltaTime)
 
-        for (weaponEntity, weaponComponent, ownerComponent) in world.entities(with: WeaponComponent.self, and: OwnerComponent.self) {
+        for (weaponEntity, weaponComponent, ownerComponent, _, _) in world.entities(
+            with: WeaponComponent.self,
+            and: OwnerComponent.self,
+            and: FacingComponent.self,
+            and: TransformComponent.self) {
             let ownerEntity = ownerComponent.ownerEntity
             guard let ownerTransform = world.getComponent(type: TransformComponent.self, for: ownerEntity),
                   let ownerInput = world.getComponent(type: InputComponent.self, for: ownerEntity) else { continue }
 
-            let ownerVelocity = world.getComponent(type: VelocityComponent.self, for: ownerEntity)
+            let ownerFacing = world.getComponent(type: FacingComponent.self, for: ownerEntity)
+            let facingRight = ownerFacing?.facing != .left
 
-            // offset from player to center of weapon's x corr flip if needed
-            var facingRight: Bool = true
-            if let vx = ownerVelocity?.linear.x, vx != 0 {
-                facingRight = vx > 0
-            }
             let mirroredOffset = SIMD2<Float>(
                 facingRight ? ownerComponent.offset.x : -ownerComponent.offset.x,
                 ownerComponent.offset.y
             )
 
+            // Mirror the aim angle when facing left so it works correctly with xScale flip.
+            let aimDir = ownerInput.aimDirection
+            let weaponRotation: Float = simd_length(aimDir) > 0.001
+                ? (facingRight ? atan2(aimDir.y, aimDir.x) : -atan2(aimDir.y, -aimDir.x))
+                : 0
+
             world.modifyComponent(type: TransformComponent.self, for: weaponEntity) { transform in
                 transform.position = ownerTransform.position + mirroredOffset
+                transform.rotation = weaponRotation
             }
 
-            // Copy owner velocity so syncNode's flipFactor logic flips the weapon sprite
-            world.modifyComponent(type: VelocityComponent.self, for: weaponEntity) { vel in
-                vel.linear.x = ownerVelocity?.linear.x ?? vel.linear.x
+            // Update weapon facing to match the owner's
+            // so syncNode's flipFactor logic flips the weapon sprite
+            world.modifyComponent(type: FacingComponent.self, for: weaponEntity) { facing in
+                facing.facing = facingRight ? .right : .left
             }
             
             if ownerInput.isShooting {
                 let isReadyToFire: Bool = (gameTime - weaponComponent.lastFiredAt) >= Float(weaponComponent.coolDownInterval)
                 let aimDirection = ownerInput.aimDirection
                 if isReadyToFire {
+                    // Ensure we never spawn a projectile with a zero-length direction vector.
+                    // fireDirection will never be 0, but fall to facing direction
+                    var fireDirection = aimDirection
+                    let epsilon: Float = 0.001
+                    if simd_length_squared(fireDirection) < epsilon * epsilon {
+                        fireDirection = facingRight ? SIMD2<Float>(1, 0) : SIMD2<Float>(-1, 0)
+                    }
                     world.modifyComponent(type: WeaponComponent.self, for: weaponEntity) { weapon in
                         weapon.lastFiredAt = gameTime
                     }
                     // Only for projectile weapon now
                     // TODO: replace speed
-                    spawnProjectile(from: ownerTransform.position, aimAt: aimDirection, speed: 300, owner: ownerEntity, in: world)
+                    spawnProjectile(from: ownerTransform.position, aimAt: fireDirection, speed: 300, owner: ownerEntity, in: world)
                 }
             }
         }
@@ -60,11 +75,14 @@ public final class WeaponSystem: System {
                                  owner: Entity,
                                  in world: World) {
         let projectile = world.createEntity()
-        world.addComponent(component: TransformComponent(position: position, scale: 1), to: projectile)
+        let goingRight = direction.x >= 0
+        let bulletRotation: Float = goingRight
+            ? atan2(direction.y, direction.x)
+            : -atan2(direction.y, -direction.x)
+        world.addComponent(component: TransformComponent(position: position, rotation: bulletRotation, scale: 1), to: projectile)
         world.addComponent(component: VelocityComponent(linear: direction * speed), to: projectile)
-        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zLayer: 3), to: projectile)
-        world.addComponent(component: ProjectileComponent(
-            damage: 10, owner: owner, effectiveRange: 400
-        ), to: projectile)
+        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zLayer: 5), to: projectile)
+        world.addComponent(component: ProjectileComponent(damage: 10, owner: owner), to: projectile)
+        world.addComponent(component: EffectiveRangeComponent(base: 400), to: projectile)
     }
 }
