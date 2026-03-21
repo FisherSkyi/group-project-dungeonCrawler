@@ -45,6 +45,7 @@ public enum EntityFactory {
         world.addComponent(component: HealthComponent(base: 100), to: entity)
         world.addComponent(component: MoveSpeedComponent(base: 90), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: SIMD2(48 * scale, 48 * scale)), to: entity)
+        world.addComponent(component: FacingComponent(), to: entity)
 
         return entity
     }
@@ -117,7 +118,33 @@ public enum EntityFactory {
         
         world.addComponent(component: roomComponent, to: entity)
         world.addComponent(component: TransformComponent(position: bounds.center), to: entity)
-        
+        return entity
+    }
+
+
+    @discardableResult
+    public static func makeWeapon(
+        in world: World,
+        ownedBy player: Entity,
+        textureName: String = "handgun",
+        offset: SIMD2<Float> = .zero,
+        scale: Float = 1,
+        lastFiredAt: Float = 0
+    ) -> Entity {
+        let entity = world.createEntity()
+        let startPos = world.getComponent(type: TransformComponent.self, for: player)?.position ?? .zero
+        world.addComponent(component: TransformComponent(position: startPos + offset, rotation: 0, scale: scale), to: entity)
+        let facingOfOwner = world.getComponent(type: FacingComponent.self, for: player)?.facing ?? .right
+        world.addComponent(component: FacingComponent(facing: facingOfOwner), to: entity)
+        world.addComponent(component: SpriteComponent(textureName: textureName, zLayer: 4), to: entity)
+        world.addComponent(component: OwnerComponent(ownerEntity: player, offset: offset), to: entity)
+        world.addComponent(component: WeaponComponent(
+            type: .handgun,
+            manaCost: 10,
+            attackSpeed: 1,
+            coolDownInterval: TimeInterval(0.2),
+            lastFiredAt: lastFiredAt
+        ), to: entity)
         return entity
     }
 }

@@ -22,21 +22,21 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         for entity: Entity,
         transform: TransformComponent,
         sprite: SpriteComponent,
+        facing: FacingComponent?,
         velocity: VelocityComponent?
     ) {
         guard let worldLayer else { return }
         let node = node(for: entity, sprite: sprite, in: worldLayer)
 
         node.position = transform.cgPoint
-        node.zRotation = 0
+        node.zRotation = CGFloat(transform.rotation)
 
+        // We need to keep velocity here as some entity don't have facing component (eg. enemy, projectile)
         var flipFactor: CGFloat = node.xScale < 0 ? -1.0 : 1.0
-        if let velocity {
-            if velocity.linear.x > 0 {
-                flipFactor = 1.0
-            } else if velocity.linear.x < 0 {
-                flipFactor = -1.0
-            }
+        if let facing {
+            flipFactor = facing.facing == .right ? 1.0 : -1.0
+        } else if let velocity, velocity.linear.x != 0 {
+            flipFactor = velocity.linear.x > 0 ? 1.0 : -1.0
         }
 
         node.xScale = CGFloat(transform.scale) * flipFactor
