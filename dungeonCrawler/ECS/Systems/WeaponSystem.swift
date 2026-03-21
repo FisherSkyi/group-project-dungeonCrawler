@@ -37,7 +37,8 @@ public final class WeaponSystem: System {
                 transform.rotation = weaponRotation
             }
 
-            // Copy owner velocity so syncNode's flipFactor logic flips the weapon sprite
+            // Update weapon facing to match the owner's
+            // so syncNode's flipFactor logic flips the weapon sprite
             world.modifyComponent(type: FacingComponent.self, for: weaponEntity) { facing in
                 facing.facing = facingRight ? .right : .left
             }
@@ -46,12 +47,19 @@ public final class WeaponSystem: System {
                 let isReadyToFire: Bool = (gameTime - weaponComponent.lastFiredAt) >= Float(weaponComponent.coolDownInterval)
                 let aimDirection = ownerInput.aimDirection
                 if isReadyToFire {
+                    // Ensure we never spawn a projectile with a zero-length direction vector.
+                    // fireDirection will never be 0, but fall to facing direction
+                    var fireDirection = aimDirection
+                    let epsilon: Float = 0.001
+                    if simd_length_squared(fireDirection) < epsilon * epsilon {
+                        fireDirection = facingRight ? SIMD2<Float>(1, 0) : SIMD2<Float>(-1, 0)
+                    }
                     world.modifyComponent(type: WeaponComponent.self, for: weaponEntity) { weapon in
                         weapon.lastFiredAt = gameTime
                     }
                     // Only for projectile weapon now
                     // TODO: replace speed
-                    spawnProjectile(from: ownerTransform.position, aimAt: aimDirection, speed: 300, owner: ownerEntity, in: world)
+                    spawnProjectile(from: ownerTransform.position, aimAt: fireDirection, speed: 300, owner: ownerEntity, in: world)
                 }
             }
         }
@@ -69,7 +77,7 @@ public final class WeaponSystem: System {
             : -atan2(direction.y, -direction.x)
         world.addComponent(component: TransformComponent(position: position, rotation: bulletRotation, scale: 1), to: projectile)
         world.addComponent(component: VelocityComponent(linear: direction * speed), to: projectile)
-        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zLayer: 3), to: projectile)
+        world.addComponent(component: SpriteComponent(textureName: "normalHandgunBullet", zLayer: 5), to: projectile)
         world.addComponent(component: ProjectileComponent(damage: 10, owner: owner), to: projectile)
         world.addComponent(component: EffectiveRangeComponent(base: 400), to: projectile)
     }

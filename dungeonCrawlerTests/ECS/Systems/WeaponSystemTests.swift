@@ -47,6 +47,8 @@ final class WeaponSystemTests: XCTestCase {
         world.addComponent(component: TransformComponent(position: ownerPosition + offset), to: weapon)
         world.addComponent(component: VelocityComponent(), to: weapon)
         world.addComponent(component: OwnerComponent(ownerEntity: owner, offset: offset), to: weapon)
+        let facingOfOwner = world.getComponent(type: FacingComponent.self, for: owner)!.facing
+        world.addComponent(component: FacingComponent(facing: facingOfOwner), to: weapon)
         world.addComponent(component: WeaponComponent(
             type: .handgun,
             manaCost: 0,
@@ -62,7 +64,7 @@ final class WeaponSystemTests: XCTestCase {
         world.entities(with: ProjectileComponent.self)
     }
 
-    // Position, mirrow offset
+    // Position, mirror offset
 
     func testWeaponPositionFollowsOwnerFacingRight() {
         let (_, weapon) = makeWeaponWithOwner(

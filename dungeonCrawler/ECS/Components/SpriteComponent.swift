@@ -23,7 +23,7 @@ public struct SpriteComponent: Component {
 
     public init(
         textureName: String,
-        zLayer: Float = 1,
+        zLayer: Float = 3,
         tintRed: Float = 1, tintGreen: Float = 1,
         tintBlue: Float = 1, tintAlpha: Float = 1
     ) {
