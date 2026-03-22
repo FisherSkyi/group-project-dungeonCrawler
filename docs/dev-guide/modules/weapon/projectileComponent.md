@@ -56,6 +56,8 @@ A projectile is destroyed when either:
 
 Both cases enqueue the entity in `DestructionQueue`, which flushes at the end of `ProjectileSystem.update`.
 
+In future iterations, we want to add a third case for hitting a damageable entity (e.g. an enemy), but currently projectiles pass through enemies without collision.
+
 ## ProjectileSystem
 
 `ProjectileSystem` runs at `priority: 60` — after `WeaponSystem` (priority 50) so any newly spawned projectiles are already in the world when movement is applied.
