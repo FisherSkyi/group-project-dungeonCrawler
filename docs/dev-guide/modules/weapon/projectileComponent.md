@@ -47,6 +47,7 @@ These components attache to the new entity (the projectile):
 | `EffectiveRangeComponent` | `base in factory method: 400` units |
 | `CollisionBoxComponent` | 6 × 6 point hitbox |
 
+Note that we decouple the effective range component from the projectile component itself. This is inspired by [this post](https://discussions.unity.com/t/ecs-component-best-practices/775672) which argues that if we have a job that requires only a certain number of those fields instead of all, it's more efficient to have those fields in a separate component.
 ## Lifetime
 
 A projectile is destroyed when either:
