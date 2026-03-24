@@ -187,8 +187,11 @@ public final class CollisionSystem: System {
         let knockbackDuration: Float = 0.1
         let bounceDir = normalize(pushTowardPlayer)
 
-        let enemyMass = Float(world.getComponent(type: MassComponent.self, for: enemy)?.mass ?? 10)
-        let playerMass = Float(world.getComponent(type: MassComponent.self, for: player)?.mass ?? 10)
+        let rawEnemyMass = Float(world.getComponent(type: MassComponent.self, for: enemy)?.mass ?? 10)
+        let rawPlayerMass = Float(world.getComponent(type: MassComponent.self, for: player)?.mass ?? 10)
+
+        let enemyMass = max(rawEnemyMass, 1.0)
+        let playerMass = max(rawPlayerMass, 1.0)
         let totalMass = enemyMass + playerMass
 
         let enemyKnockbackSpeed = baseKnockbackSpeed / enemyMass
