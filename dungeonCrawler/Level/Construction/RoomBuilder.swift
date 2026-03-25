@@ -36,7 +36,7 @@ public final class RoomBuilder {
             world.addComponent(component: SpriteComponent.floor(size: bounds.size), to: entity)
         }
         world.addComponent(component: FloorTag(), to: entity)
-        world.addComponent(component: OwnerRoomComponent(roomID: roomID), to: entity)
+        world.addComponent(component: RoomMemberComponent(roomID: roomID), to: entity)
     }
 
     /// Places a wall collider and sprite at the given position.
@@ -48,7 +48,7 @@ public final class RoomBuilder {
             world.addComponent(component: SpriteComponent.wall(size: size), to: entity)
         }
         world.addComponent(component: WallTag(), to: entity)
-        world.addComponent(component: OwnerRoomComponent(roomID: roomID), to: entity)
+        world.addComponent(component: RoomMemberComponent(roomID: roomID), to: entity)
         
         structuralBounds.append((center: position, size: size))
     }
@@ -60,7 +60,7 @@ public final class RoomBuilder {
         world.addComponent(component: CollisionBoxComponent(size: size), to: entity)
         world.addComponent(component: SpriteComponent.obstacle(size: size), to: entity)
         world.addComponent(component: ObstacleTag(), to: entity)
-        world.addComponent(component: OwnerRoomComponent(roomID: roomID), to: entity)
+        world.addComponent(component: RoomMemberComponent(roomID: roomID), to: entity)
         
         structuralBounds.append((center: position, size: size))
     }

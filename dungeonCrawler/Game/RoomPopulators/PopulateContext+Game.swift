@@ -7,7 +7,7 @@ import simd
 /// maintaining the modular boundary between level generation and game logic.
 extension PopulateContext {
     
-    /// Spawns an enemy and automatically attaches an `OwnerRoomComponent`.
+    /// Spawns an enemy and automatically attaches a `RoomMemberComponent`.
     @discardableResult
     public mutating func spawnEnemy(at position: SIMD2<Float>, type: EnemyType) -> Entity {
         let enemy = EntityFactory.makeEnemy(
@@ -16,9 +16,8 @@ extension PopulateContext {
             type: type,
             baseScale: scale
         )
-        
         world.addComponent(
-            component: OwnerRoomComponent(roomID: roomID),
+            component: RoomMemberComponent(roomID: roomID),
             to: enemy
         )
         
