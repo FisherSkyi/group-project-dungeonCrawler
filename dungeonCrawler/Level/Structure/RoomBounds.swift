@@ -19,6 +19,11 @@ public struct RoomBounds {
         self.origin = origin
         self.size = SIMD2<Float>(Swift.max(0, size.x), Swift.max(0, size.y))
     }
+
+    public init(center: SIMD2<Float>, size: SIMD2<Float>) {
+        self.origin = center - size / 2
+        self.size = SIMD2<Float>(Swift.max(0, size.x), Swift.max(0, size.y))
+    }
     
     // Edge Accessors
     public var minX: Float { origin.x }
@@ -40,6 +45,12 @@ public struct RoomBounds {
     public func contains(_ point: SIMD2<Float>) -> Bool {
         point.x >= minX && point.x <= maxX &&
         point.y >= minY && point.y <= maxY
+    }
+
+    /// Check if this room intersects another RoomBounds
+    public func intersects(_ other: RoomBounds) -> Bool {
+        return self.minX < other.maxX && self.maxX > other.minX &&
+               self.minY < other.maxY && self.maxY > other.minY
     }
     
     /// Returns a new `RoomBounds` shrunk by `amount` on all sides.
