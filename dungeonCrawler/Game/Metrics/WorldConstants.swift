@@ -11,4 +11,14 @@ public enum WorldConstants {
     
     /// The standard size for a human-like entity (2.0x tileSize).
     public static let playerSize: Float = 32.0
+
+    /// Standardized entity scale based on a 1024-unit coordinate system and 48-pixel assets.
+    /// This ensures actors look the same relative to room sizes (currently ~0.853).
+    public static let standardEntityScale: Float = 1024.0 * 0.04 / 48.0
+
+    /// Time in seconds before a transition can be triggered again.
+    public static let transitionCooldown: Float = 0.5
+
+    /// Distance from room boundary to spawn/position player during transitions.
+    public static let roomEntryInset: Float = 80.0
 }
