@@ -14,8 +14,6 @@ public final class BoxRoomConstructor: RoomConstructor {
         public var centerClearRadius: Float = 100
         /// Density coefficient for obstacles.
         public var obstacleDensity: Float = 0.12
-        /// Width of perimeter walls.
-        public var wallThickness: Float = 16
         /// Whether to create visual sprites (Floor/Wall) in addition to colliders.
         public var renderVisualSprites: Bool = true
 
@@ -53,27 +51,27 @@ public final class BoxRoomConstructor: RoomConstructor {
         doorways: [Doorway],
         builder: RoomBuilder
     ) {
-        let t = config.wallThickness
+        let t = WorldConstants.wallThickness
 
         createHorizontalWall(
             y: bounds.minY + t / 2,
             bounds: bounds, facing: .south, doorways: doorways,
-            thickness: t, builder: builder
+            builder: builder
         )
         createHorizontalWall(
             y: bounds.maxY - t / 2,
             bounds: bounds, facing: .north, doorways: doorways,
-            thickness: t, builder: builder
+            builder: builder
         )
         createVerticalWall(
             x: bounds.minX + t / 2,
             bounds: bounds, facing: .west, doorways: doorways,
-            thickness: t, builder: builder
+            builder: builder
         )
         createVerticalWall(
             x: bounds.maxX - t / 2,
             bounds: bounds, facing: .east, doorways: doorways,
-            thickness: t, builder: builder
+            builder: builder
         )
     }
 
@@ -82,10 +80,9 @@ public final class BoxRoomConstructor: RoomConstructor {
         bounds: RoomBounds,
         facing: Direction,
         doorways: [Doorway],
-        thickness: Float,
         builder: RoomBuilder
     ) {
-        let t = thickness
+        let t = WorldConstants.wallThickness
         let openings = doorways.filter { $0.direction == facing }
         let xStart = bounds.minX + t
         let xEnd   = bounds.maxX   - t
@@ -120,10 +117,9 @@ public final class BoxRoomConstructor: RoomConstructor {
         bounds: RoomBounds,
         facing: Direction,
         doorways: [Doorway],
-        thickness: Float,
         builder: RoomBuilder
     ) {
-        let t = thickness
+        let t = WorldConstants.wallThickness
         let openings = doorways.filter { $0.direction == facing }
         let yStart = bounds.minY
         let yEnd   = bounds.maxY
@@ -136,7 +132,6 @@ public final class BoxRoomConstructor: RoomConstructor {
 
         let sorted = openings.sorted { $0.position.y < $1.position.y }
         var cursor = yStart
-
         for opening in sorted {
             let half = opening.width / 2
             let gapFrom = opening.position.y - half
