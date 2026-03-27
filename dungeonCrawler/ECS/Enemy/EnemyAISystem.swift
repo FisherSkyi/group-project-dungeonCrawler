@@ -41,9 +41,9 @@ public final class EnemyAISystem: System {
             else { continue }
 
             if currentState.mode == .chase {
-                StraightLineChaseStrategy().update(entity: enemy, transform: transform, playerPos: playerPos, world: world)
+                currentState.chaseStrategy.update(entity: enemy, transform: transform, playerPos: playerPos, world: world)
             } else {
-                WanderStrategy().update(entity: enemy, transform: transform, playerPos: playerPos, world: world)
+                currentState.wanderStrategy.update(entity: enemy, transform: transform, playerPos: playerPos, world: world)
             }
         }
     }

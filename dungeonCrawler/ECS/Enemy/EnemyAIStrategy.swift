@@ -9,7 +9,7 @@ import Foundation
 import simd
 
 public protocol EnemyAIStrategy {
-    mutating func update(entity: Entity,
+    func update(entity: Entity,
                          transform: TransformComponent,
                          playerPos: SIMD2<Float>,
                          world: World)
