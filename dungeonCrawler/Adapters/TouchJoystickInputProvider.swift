@@ -9,7 +9,7 @@ import Foundation
 import simd
 import UIKit
 
-public final class TouchJoystickInputProvider: InputProvider {
+public final class TouchJoystickInputProvider: JoyStickInputProvider {
 
     // MARK: - Configuration
 
@@ -140,7 +140,7 @@ public final class TouchJoystickInputProvider: InputProvider {
 
 // MARK: - MockInputProvider  (unit tests / CI — no UIKit dependency)
 
-public final class MockInputProvider: InputProvider {
+public final class MockInputProvider: JoyStickInputProvider {
     public var rawMoveVector: SIMD2<Float> = .zero
     public var rawAimVector:  SIMD2<Float> = .zero
     public var isShootPressed: Bool = false

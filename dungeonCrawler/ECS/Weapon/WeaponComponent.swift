@@ -21,7 +21,7 @@ struct WeaponComponent: Component {
     }
 }
 
-enum WeaponType: String {
+public enum WeaponType: String {
     case handgun
     case sword
     case bow

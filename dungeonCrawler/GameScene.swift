@@ -30,6 +30,7 @@ class GameScene: SKScene {
 
     // MARK: - Input provider
     private let touchInput = TouchJoystickInputProvider()
+    private let reloadInput = SwitchWeaponButtonInputProvider()
 
     // MARK: - Collision Events
     let collisionEvents  = CollisionEventBuffer()
@@ -42,6 +43,17 @@ class GameScene: SKScene {
     private let rightHandle = SKShapeNode(circleOfRadius: 22)
 
     private var lastUpdateTime: TimeInterval = 0
+
+    override func didMove(to view: SKView) {
+        super.didMove(to: view)
+        view.addSubview(reloadInput.button)
+        NSLayoutConstraint.activate([
+            reloadInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
+            reloadInput.button.heightAnchor.constraint(equalTo: reloadInput.button.widthAnchor),
+            reloadInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.2),
+            reloadInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.05),
+        ])
+    }
 
     override func sceneDidLoad() {
         self.lastUpdateTime = 0
