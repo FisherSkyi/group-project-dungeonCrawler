@@ -17,29 +17,25 @@ class GameScene: SKScene {
     // MARK: - Scene layers
     /// worldLayer moves each frame to implement camera tracking.
     private let worldLayer = SKNode()
-    /// uiLayer stays fixed — joystick HUD lives here.
+    /// uiLayer stays fixed — joystick, HUD lives here.
     private let uiLayer    = SKNode()
 
     // MARK: - Adapters
     private var renderingBackend: SpriteKitRenderingAdapter!
-    private var cameraAdapter: SpriteKitCameraAdapter!
-    private var hudBackend: SpriteKitHUDAdapter!
+    private var cameraAdapter:    SpriteKitCameraAdapter!
+    private var tileAdapter:      SpriteKitTileMapAdapter!
+    private var hudBackend:       SpriteKitHUDAdapter!
+    private var joystickBackend:  SpriteKitJoystickAdapter!
+
+    // MARK: - Level service (owns the graph and room lifecycle)
+    private var levelOrchestrator: LevelOrchestrator!
 
     // MARK: - Input provider
     private let touchInput = TouchJoystickInputProvider()
-    
-    // MARK: - Map system
-    private let mapSystem = MapSystem()
-    
-    // MARK: - Collision Events
-    let collisionEvents   = CollisionEventBuffer()
-    let destructionQueue  = DestructionQueue()
 
-    // MARK: - Joystick HUD nodes (drawn directly in SpriteKit, above game world)
-    private let leftBase    = SKShapeNode(circleOfRadius: 50)
-    private let leftHandle  = SKShapeNode(circleOfRadius: 22)
-    private let rightBase   = SKShapeNode(circleOfRadius: 50)
-    private let rightHandle = SKShapeNode(circleOfRadius: 22)
+    // MARK: - Collision Events
+    let collisionEvents  = CollisionEventBuffer()
+    let destructionQueue = DestructionQueue()
 
     private var lastUpdateTime: TimeInterval = 0
 
@@ -56,31 +52,8 @@ class GameScene: SKScene {
 
         view?.isMultipleTouchEnabled = true
 
-        setupJoystickHUD()
         setupSystems()
-        generateInitialRoom()
-    }
-
-    // MARK: - Joystick HUD setup
-
-    private func setupJoystickHUD() {
-        for base in [leftBase, rightBase] {
-            base.strokeColor = SKColor(white: 1, alpha: 0.35)
-            base.fillColor   = SKColor(white: 1, alpha: 0.08)
-            base.lineWidth   = 2
-            base.zPosition   = 50
-            base.isHidden    = true
-            uiLayer.addChild(base)
-        }
-
-        for handle in [leftHandle, rightHandle] {
-            handle.strokeColor = SKColor(white: 1, alpha: 0.6)
-            handle.fillColor   = SKColor(white: 1, alpha: 0.25)
-            handle.lineWidth   = 2
-            handle.zPosition   = 51
-            handle.isHidden    = true
-            uiLayer.addChild(handle)
-        }
+        startLevel(1)
     }
 
     // MARK: - System wiring
@@ -89,57 +62,47 @@ class GameScene: SKScene {
         renderingBackend = SpriteKitRenderingAdapter(worldLayer: worldLayer)
         cameraAdapter    = SpriteKitCameraAdapter(worldLayer: worldLayer)
         hudBackend       = SpriteKitHUDAdapter(uiLayer: uiLayer, screenSize: size)
+        joystickBackend  = SpriteKitJoystickAdapter(uiLayer: uiLayer, screenSize: size)
 
-        systemManager.register(mapSystem)
+        let registryLoader = TileRegistryLoader()
+        tileAdapter = SpriteKitTileMapAdapter(worldLayer: worldLayer, registryLoader: registryLoader)
+
+        // Build the dungeon manager.
+        var constructionConfig = BoxRoomConstructor.Config()
+        constructionConfig.renderVisualSprites = false  // tilemap handles visuals
+        levelOrchestrator = LevelOrchestrator(
+            layoutStrategy:  LinearDungeonLayout(
+                roomCount:  3,
+                enemyPool:  [.charger, .mummy, .ranger]
+            ),
+            roomConstructor: BoxRoomConstructor(config: constructionConfig)
+        )
+        levelOrchestrator.tileMapRenderer = tileAdapter
+
+        systemManager.register(LevelTransitionSystem(orchestrator: levelOrchestrator))
         systemManager.register(InputSystem(inputProvider: touchInput))
         systemManager.register(EnemyAISystem())
         systemManager.register(HealthSystem())
         systemManager.register(MovementSystem())
-        systemManager.register(CollisionSystem(events: collisionEvents,  destructionQueue: destructionQueue))
+        systemManager.register(CollisionSystem(events: collisionEvents, destructionQueue: destructionQueue))
         systemManager.register(WeaponSystem())
         systemManager.register(KnockbackSystem())
         systemManager.register(CameraSystem())
-        systemManager.register(HUDSystem(backend: hudBackend))
+        systemManager.register(HUDSystem(backend: hudBackend, joystickBackend: joystickBackend, inputProvider: touchInput))
         systemManager.register(RenderSystem(backend: renderingBackend))
-        systemManager.register(ProjectileSystem(events: collisionEvents,  destructionQueue: destructionQueue))
+        systemManager.register(ProjectileSystem(events: collisionEvents, destructionQueue: destructionQueue))
     }
 
-    // MARK: - Entity spawning
+    // MARK: - Level management
 
-    private func generateInitialRoom() {
-        let roomWidth  = Float(size.width  * 0.9)
-        let roomHeight = Float(size.height * 0.9)
-        let bounds = RoomBounds(
-            origin: SIMD2<Float>(-roomWidth / 2, -roomHeight / 2),
-            size:   SIMD2<Float>(roomWidth, roomHeight)
-        )
-        
-        let room = mapSystem.generateAndActivateRoom(bounds: bounds, world: world, size: size)
-        mapSystem.spawnPlayerInRoom(room: room, world: world, size: size)
-        
-        // Create camera entity and attach focus to the player.
-        let cameraEntity = world.createEntity()
-        world.addComponent(component: ViewportComponent(), to: cameraEntity)
-       
-        if let player = world.entities(with: PlayerTagComponent.self).first {
-            world.addComponent(component: CameraFocusComponent(), to: player)
-        }
-    }
+    private func startLevel(_ levelNumber: Int) {
+        levelOrchestrator.loadLevel(levelNumber, world: world)
 
-    private func spawnInitialEntities() {
-        let shortSide   = Float(min(size.width, size.height))
-        let knightScale = shortSide * 0.1 / 48.0   // assumes 48pt base texture size
-        let enemyScale = shortSide * 0.1 / 48.0   // follow knight scale for now
-        let weaponScale = shortSide * 0.1 / 48.0
-        let playerEntity = EntityFactory.makePlayer(in: world, at: .zero, scale: knightScale)
-        EntityFactory.makeEnemy(in: world, at: SIMD2(200, 200), type: .tower, baseScale: enemyScale)
-        EntityFactory.makeEnemy(in: world, at: SIMD2(100, 100), type: .charger, baseScale: enemyScale * EnemyType.charger.scale)
-        EntityFactory.makeWeapon(in: world, ownedBy: playerEntity, textureName: "handgun", offset: SIMD2(10, -5), scale: weaponScale, lastFiredAt: 0)
         // Camera entity — ViewportComponent holds live camera state.
-        // CameraFocusComponent stays on the player
-
-        let cameraEntity = world.createEntity()
-        world.addComponent(component: ViewportComponent(), to: cameraEntity)
+        if world.entities(with: ViewportComponent.self).isEmpty {
+            let cameraEntity = world.createEntity()
+            world.addComponent(component: ViewportComponent(), to: cameraEntity)
+        }
         if let player = world.entities(with: PlayerTagComponent.self).first {
             world.addComponent(component: CameraFocusComponent(), to: player)
         }
@@ -167,46 +130,6 @@ class GameScene: SKScene {
         touchInput.touchesCancelled(touches, in: view)
     }
 
-    // MARK: - Joystick HUD update
-
-    private func updateJoystickHUD() {
-        updateStick(
-            base: leftBase, handle: leftHandle,
-            basePos: touchInput.leftBasePosition,
-            handlePos: touchInput.leftHandlePosition
-        )
-        updateStick(
-            base: rightBase, handle: rightHandle,
-            basePos: touchInput.rightBasePosition,
-            handlePos: touchInput.rightHandlePosition
-        )
-    }
-
-    private func updateStick(
-        base: SKShapeNode,
-        handle: SKShapeNode,
-        basePos: CGPoint?,
-        handlePos: CGPoint?
-    ) {
-        if let bp = basePos, let hp = handlePos {
-            base.isHidden   = false
-            handle.isHidden = false
-            base.position   = uiKitToSpriteKit(bp)
-            handle.position = uiKitToSpriteKit(hp)
-        } else {
-            base.isHidden   = true
-            handle.isHidden = true
-        }
-    }
-
-    /// Converts a UIKit point (origin top-left) to SpriteKit space (origin centre).
-    private func uiKitToSpriteKit(_ point: CGPoint) -> CGPoint {
-        CGPoint(
-            x: point.x - size.width  / 2,
-            y: size.height / 2 - point.y
-        )
-    }
-
     // MARK: - Game loop
 
     override func update(_ currentTime: TimeInterval) {
@@ -221,7 +144,5 @@ class GameScene: SKScene {
            let viewport = world.getComponent(type: ViewportComponent.self, for: cameraEntity) {
             cameraAdapter.apply(viewport: viewport, screenCenter: .zero)
         }
-
-        updateJoystickHUD()
     }
 }
