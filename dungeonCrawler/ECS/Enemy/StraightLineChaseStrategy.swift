@@ -9,7 +9,7 @@ import Foundation
 import simd
 
 /// Basic Chase Strategy with Enemies moving towards Player in a straight line with Chase Speed
-public final class StraightLineChaseStrategy: EnemyAIStrategy {
+public struct StraightLineChaseStrategy: EnemyAIStrategy {
 
     public var chaseSpeed: Float
 

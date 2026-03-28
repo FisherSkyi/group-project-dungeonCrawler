@@ -8,13 +8,13 @@
 import Foundation
 import simd
 
-/// A strategy that Enemy will wander around by choosing a random point within the wanderRadius
-/// Simple AI movement when Player is not in range
-public final class WanderStrategy: EnemyAIStrategy {
+/// A strategy that moves an enemy to random points within wanderRadius.
+/// Wander target state is stored in WanderTargetComponent on the entity,
+/// added lazily on first update — stationary enemies will never receive it.
+public struct WanderStrategy: EnemyAIStrategy {
 
     public var wanderRadius: Float
     public var wanderSpeed: Float
-    private var wanderTarget: SIMD2<Float>?
 
     public init(wanderRadius: Float = 100, wanderSpeed: Float = 40) {
         self.wanderRadius = wanderRadius
@@ -25,12 +25,20 @@ public final class WanderStrategy: EnemyAIStrategy {
     public func update(entity: Entity, transform: TransformComponent, playerPos: SIMD2<Float>, world: World) {
         let arrivalThreshold: Float = 8
 
-        if wanderTarget == nil ||
-            simd_length(transform.position - wanderTarget!) < arrivalThreshold {
-            wanderTarget = getCandidateTarget(from: transform.position) ?? wanderTarget
+        // Lazily attach WanderTargetComponent on first use
+        if world.getComponent(type: WanderTargetComponent.self, for: entity) == nil {
+            world.addComponent(component: WanderTargetComponent(), to: entity)
         }
 
-        guard let target = wanderTarget else { return }
+        let currentTarget = world.getComponent(type: WanderTargetComponent.self, for: entity)?.target
+
+        if currentTarget == nil ||
+            simd_length(transform.position - currentTarget!) < arrivalThreshold {
+            let newTarget = getCandidateTarget(from: transform.position) ?? currentTarget
+            world.modifyComponent(type: WanderTargetComponent.self, for: entity) { $0.target = newTarget }
+        }
+
+        guard let target = world.getComponent(type: WanderTargetComponent.self, for: entity)?.target else { return }
 
         let wanderDelta = target - transform.position
         guard simd_length_squared(wanderDelta) > 1e-6 else { return }
