@@ -10,7 +10,7 @@ import simd
 
 public protocol EnemyAIStrategy {
     func update(entity: Entity,
-                         transform: TransformComponent,
-                         playerPos: SIMD2<Float>,
-                         world: World)
+                transform: TransformComponent,
+                playerPos: SIMD2<Float>,
+                world: World)
 }
