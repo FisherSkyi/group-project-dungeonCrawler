@@ -21,7 +21,7 @@ final class InputSystemTests: XCTestCase {
         super.setUp()
         world = World()
         mockProvider = MockInputProvider()
-        system = InputSystem(inputProvider: mockProvider)
+        system = InputSystem(joyStickInputProvider: mockProvider, commandQueues: CommandQueues())
     }
     
     override func tearDown() {

@@ -8,27 +8,16 @@
 import Foundation
 import simd
 
-// MARK: - InputProvider protocol
-
-/// Abstracts the source of raw input so the system is hardware-agnostic.
-public protocol JoyStickInputProvider: AnyObject {
-    var rawMoveVector: SIMD2<Float> { get }
-
-    var rawAimVector: SIMD2<Float> { get }
-
-    var isShootPressed: Bool { get }
-}
-
 // MARK: - InputSystem
 
 public final class InputSystem: System {
 
     public let priority: Int = 10
 
-    private weak var joyStickInputProvider: JoyStickInputProvider?
+    private weak var joyStickInputProvider: MoveAndAimInputProvider?
     private let commandQueues: CommandQueues
 
-    public init(joyStickInputProvider: JoyStickInputProvider, commandQueues: CommandQueues) {
+    public init(joyStickInputProvider: MoveAndAimInputProvider, commandQueues: CommandQueues) {
         self.joyStickInputProvider = joyStickInputProvider
         self.commandQueues = commandQueues
     }

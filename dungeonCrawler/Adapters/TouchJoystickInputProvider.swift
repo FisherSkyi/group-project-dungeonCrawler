@@ -9,7 +9,16 @@ import Foundation
 import simd
 import UIKit
 
-public final class TouchJoystickInputProvider: JoyStickInputProvider {
+/// Abstracts the source of raw input so the system is hardware-agnostic.
+public protocol MoveAndAimInputProvider: AnyObject {
+    var rawMoveVector: SIMD2<Float> { get }
+
+    var rawAimVector: SIMD2<Float> { get }
+
+    var isShootPressed: Bool { get }
+}
+
+public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
 
     // MARK: - Configuration
 
@@ -17,6 +26,8 @@ public final class TouchJoystickInputProvider: JoyStickInputProvider {
     public var deadZone: Float = 10
     public var leftZoneFraction: CGFloat = 0.5
     public var shootThreshold: Float = 0.25
+
+    private let commandQueues: CommandQueues
 
     // MARK: - Joystick visual state (read by GameScene to draw the HUD)
 
@@ -47,7 +58,10 @@ public final class TouchJoystickInputProvider: JoyStickInputProvider {
     private var _leftStick  = StickState()
     private var _rightStick = StickState()
 
-    public init() {}
+    public init(commandQueues: CommandQueues) {
+        self.commandQueues = commandQueues
+        
+    }
 
     // MARK: - Touch forwarding
 
@@ -140,7 +154,7 @@ public final class TouchJoystickInputProvider: JoyStickInputProvider {
 
 // MARK: - MockInputProvider  (unit tests / CI — no UIKit dependency)
 
-public final class MockInputProvider: JoyStickInputProvider {
+public final class MockInputProvider: MoveAndAimInputProvider {
     public var rawMoveVector: SIMD2<Float> = .zero
     public var rawAimVector:  SIMD2<Float> = .zero
     public var isShootPressed: Bool = false
