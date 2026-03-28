@@ -9,7 +9,7 @@ import Foundation
 
 /// This is used in CommandQueue
 
-final class RingBuffer<T> {
+final class RingQueue<T> {
     private var storage: [T?]
     private var head: Int = 0
     private var tail: Int = 0
@@ -47,6 +47,11 @@ final class RingBuffer<T> {
             }
          }
         return nil
+    }
+    
+    func peek() -> T? {
+        guard !isEmpty else { return nil }
+        return storage[head]
     }
     
     func modifyFirst(where predicate: (T?) -> Bool, _ body: (inout T?) -> Void) {

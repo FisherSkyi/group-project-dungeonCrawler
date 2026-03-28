@@ -27,6 +27,10 @@ public class CommandQueues {
     func pop<C: Command>(_ type: C.Type) -> C? {
         queue(for: type)?.dequeue()
     }
+    
+    func peek<C: Command>(_ type: C.Type) -> C? {
+        queue(for: type)?.peek()
+    }
 
     func cancelAcrossAll(commandId: CommandId) {
         queues.values.forEach { queue in

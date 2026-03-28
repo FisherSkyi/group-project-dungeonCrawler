@@ -36,6 +36,6 @@ public final class SwitchWeaponButtonInputProvider {
     }
 
     @objc private func buttonDown() {
-        commandQueues.push(SwitchWeaponCommand(id: UUID()))
+        commandQueues.push(SwitchWeaponCommand(id: CommandId()))
     }
 }

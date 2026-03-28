@@ -28,6 +28,10 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
     public var shootThreshold: Float = 0.25
 
     private let commandQueues: CommandQueues
+    
+    init(commandQueues: CommandQueues) {
+        self.commandQueues = commandQueues
+    }
 
     // MARK: - Joystick visual state (read by GameScene to draw the HUD)
 
@@ -40,8 +44,10 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
 
     // MARK: - InputProvider
 
-    public var rawMoveVector: SIMD2<Float> { quantise(deflection(for: _leftStick)) }
-    public var rawAimVector:  SIMD2<Float> { quantise(deflection(for: _rightStick)) }
+    public var rawMoveVector: SIMD2<Float> { upperBound(deflection(for: _leftStick))
+    }
+    public var rawAimVector:  SIMD2<Float> { upperBound(deflection(for: _rightStick))
+    }
     public var isShootPressed: Bool {
         length(deflection(for: _rightStick)) / joystickRadius > shootThreshold
     }
@@ -57,11 +63,6 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
 
     private var _leftStick  = StickState()
     private var _rightStick = StickState()
-
-    public init(commandQueues: CommandQueues) {
-        self.commandQueues = commandQueues
-        
-    }
 
     // MARK: - Touch forwarding
 
@@ -82,6 +83,7 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
                 }
             }
         }
+        enqueue()
     }
 
     public func touchesMoved(_ touches: Set<UITouch>, in view: UIView) {
@@ -101,6 +103,7 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
                 )
             }
         }
+        enqueue()
     }
 
     public func touchesEnded(_ touches: Set<UITouch>, in view: UIView) {
@@ -116,6 +119,13 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
                 rightHandlePosition = nil
             }
         }
+        enqueue()
+    }
+
+    private func enqueue() {
+        commandQueues.push(MoveCommand(id: CommandId(), rawMoveVector: rawMoveVector))
+        commandQueues.push(AimCommand(id: CommandId(), rawAimVector: rawAimVector))
+        commandQueues.push(FireCommand(id: CommandId(), shooting: isShootPressed))
     }
 
     public func touchesCancelled(_ touches: Set<UITouch>, in view: UIView) {
@@ -133,8 +143,8 @@ public final class TouchJoystickInputProvider: MoveAndAimInputProvider {
         return length(vec) > joystickRadius ? normalize(vec) * joystickRadius : vec
     }
 
-    /// Snap continuous angle to nearest 45° and return a unit vector.
-    private func quantise(_ vec: SIMD2<Float>) -> SIMD2<Float> {
+    ///  Prevent too small len and too large movement, which may bypass movement rules
+    private func upperBound(_ vec: SIMD2<Float>) -> SIMD2<Float> {
         let len = length(vec)
         guard len > 0.001 else { return .zero }
         return vec / len

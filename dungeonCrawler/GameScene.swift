@@ -32,7 +32,7 @@ class GameScene: SKScene {
     private let commandQueues = CommandQueues()
 
     // MARK: - Input provider
-    private let touchInput = TouchJoystickInputProvider()
+    private lazy var touchInput = TouchJoystickInputProvider(commandQueues: commandQueues)
     private lazy var reloadInput = SwitchWeaponButtonInputProvider(commandQueues: commandQueues)
 
     // MARK: - Collision Events
@@ -122,7 +122,7 @@ class GameScene: SKScene {
 
         systemManager.register(LevelTransitionSystem(orchestrator: levelOrchestrator))
         commandQueues.register(SwitchWeaponCommand.self)
-        systemManager.register(InputSystem(joyStickInputProvider: touchInput, commandQueues: commandQueues))
+        systemManager.register(InputSystem(commandQueues: commandQueues))
         systemManager.register(EnemyAISystem())
         systemManager.register(HealthSystem())
         systemManager.register(MovementSystem())

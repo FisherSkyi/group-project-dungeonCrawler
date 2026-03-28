@@ -8,18 +8,22 @@
 import Foundation
 
 final class CommandQueue<C: Command>: Cancellable {
-    private var buffer: RingBuffer<C>
+    private var buffer: RingQueue<C>
     
     init(capacity: Int) {
-        self.buffer = RingBuffer(capacity: capacity)
+        self.buffer = RingQueue(capacity: capacity)
     }
     
     func enqueue(_ command: C) {
         buffer.push(command)
     }
     
-    func dequeue() -> (C)? {
+    func dequeue() -> C? {
         return buffer.pop()
+    }
+    
+    func peek() -> C? {
+        return buffer.peek()
     }
 
     func cancel(commandId: CommandId) {

@@ -14,35 +14,47 @@ public final class InputSystem: System {
 
     public let priority: Int = 10
 
-    private weak var joyStickInputProvider: MoveAndAimInputProvider?
     private let commandQueues: CommandQueues
 
-    public init(joyStickInputProvider: MoveAndAimInputProvider, commandQueues: CommandQueues) {
-        self.joyStickInputProvider = joyStickInputProvider
+    public init(commandQueues: CommandQueues) {
         self.commandQueues = commandQueues
     }
 
     public func update(deltaTime: Double, world: World) {
-        guard let moveAndAimProvider = joyStickInputProvider else { return }
-
-        let moveDirection = moveAndAimProvider.rawMoveVector
-        let aimDirection  = moveAndAimProvider.rawAimVector
-        let shooting      = moveAndAimProvider.isShootPressed
-
-        for entity in world.entities(with: InputComponent.self) {
-            guard world.getComponent(type: KnockbackComponent.self, for: entity) == nil else { continue }
-
-            world.modifyComponent(type: InputComponent.self, for: entity) { input in
-                input.moveDirection = moveDirection
-                input.aimDirection  = aimDirection
-                input.isShooting    = shooting
+        var finalMoveDirectionX: Float? = nil
+        while let moveCommand = commandQueues.pop(MoveCommand.self) {
+            for entity in world.entities(with: InputComponent.self) {
+                guard world.getComponent(type: KnockbackComponent.self, for: entity) == nil else { continue }
+                world.modifyComponent(type: InputComponent.self, for: entity) { input in
+                    input.moveDirection = moveCommand.rawMoveVector
+                }
             }
+            finalMoveDirectionX = moveCommand.rawMoveVector.x
+        }
 
-            // Update facing: aim direction takes priority over move direction when aim input is present.
-            let facingX: Float = aimDirection.x != 0 ? aimDirection.x : moveDirection.x
-            guard facingX != 0 else { continue }
-            world.modifyComponent(type: FacingComponent.self, for: entity) { facing in
-                facing.facing = facingX > 0 ? .right : .left
+        while let aimCommand = commandQueues.pop(AimCommand.self) {
+            let aimDirection = aimCommand.rawAimVector
+            for entity in world.entities(with: InputComponent.self) {
+                guard world.getComponent(type: KnockbackComponent.self, for: entity) == nil else { continue }
+                world.modifyComponent(type: InputComponent.self, for: entity) { input in
+                    input.aimDirection = aimDirection
+                }
+                // Update facing: aim direction takes priority over move direction when aim input is present.
+                let facingX: Float? = aimDirection.x != 0 ? aimDirection.x : finalMoveDirectionX
+                guard let facingX = facingX, facingX != 0 else { continue }
+                world.modifyComponent(type: FacingComponent.self, for: entity) { facing in
+                    facing.facing = facingX > 0 ? .right : .left
+                }
+            }
+        }
+
+        while let fireCommand = commandQueues.pop(FireCommand.self) {
+            let isShooting = fireCommand.shooting
+            for entity in world.entities(with: InputComponent.self) {
+                guard world.getComponent(type: KnockbackComponent.self, for: entity) == nil else { continue }
+                world.modifyComponent(type: InputComponent.self, for: entity) { input in
+                    input.isShooting = isShooting
+                }
             }
         }
 
