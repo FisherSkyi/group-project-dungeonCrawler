@@ -10,8 +10,12 @@ import Foundation
 public final class HealthSystem: System {
 
     public let priority: Int = 20
+    
+    private let destructionQueue: DestructionQueue
 
-    public init() {}
+    public init(destructionQueue: DestructionQueue) {
+        self.destructionQueue = destructionQueue
+    }
 
     public func update(deltaTime: Double, world: World) {
         for entity in world.entities(with: HealthComponent.self) {

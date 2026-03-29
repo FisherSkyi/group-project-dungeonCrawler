@@ -41,6 +41,15 @@ public enum EnemyType {
         case .tower:   return 20
         }
     }
+    
+    var contactDamage: Float {
+        switch self {
+        case .charger: return 20.0
+        case .mummy:   return 10.0
+        case .ranger:  return 5.0
+        case .tower:   return 15.0
+        }
+    }
 }
 
 // Components attached:
@@ -91,6 +100,7 @@ public struct EnemyEntityFactory: EntityFactory {
         world.addComponent(component: EnemyStateComponent(), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: SIMD2(WorldConstants.playerSize * finalScale, WorldConstants.playerSize * finalScale)), to: entity)
         world.addComponent(component: MassComponent(mass: type.mass), to: entity)
+        world.addComponent(component: ContactDamageComponent(damage: type.contactDamage), to: entity)
 
         return entity
     }

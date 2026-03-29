@@ -207,6 +207,8 @@ public final class CollisionSystem: System {
                                duration: knockbackDuration, world: world)
         applyKnockbackIfNeeded(to: enemy,  velocity: -enemyKnockbackSpeed * bounceDir,
                                duration: knockbackDuration, world: world)
+        let damage = world.getComponent(type: ContactDamageComponent.self, for: enemy)?.damage ?? 10.0
+        events.recordPlayerHitByEnemy(player: player, enemy: enemy, damage: damage)
     }
  
     /// Two enemies overlap — equal positional split, no knockback.
