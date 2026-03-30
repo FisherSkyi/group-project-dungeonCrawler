@@ -24,7 +24,7 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         sprite: SpriteComponent,
         facing: FacingComponent?,
         velocity: VelocityComponent?,
-        healthRatio: Float?
+        health: HealthComponent?
     ) {
         guard let worldLayer else { return }
         let node = node(for: entity, sprite: sprite, in: worldLayer)
@@ -67,7 +67,9 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         let isWhiteTint = sprite.tint.x == 1 && sprite.tint.y == 1 && sprite.tint.z == 1
         node.colorBlendFactor = isColourContent ? 1.0 : (isWhiteTint ? 0.0 : 1.0)
         
-        if let ratio = healthRatio {
+        if let health {
+            let maxHP = health.value.max ?? health.value.base
+            let ratio = maxHP > 0 ? health.value.current / maxHP : 0
             updateHealthBar(on: node, ratio: CGFloat(ratio))
         } else {
             node.childNode(withName: "healthBarBG")?.removeFromParent()
