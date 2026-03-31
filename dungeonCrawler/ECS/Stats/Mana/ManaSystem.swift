@@ -8,7 +8,8 @@
 import Foundation
 
 public final class ManaSystem: System {
-    public let priority: Int = 15  // before HealthSystem (20), well before WeaponSystem (50)
+    
+    public var dependencies: [System.Type] { [] }
     
     public init() {}
     
