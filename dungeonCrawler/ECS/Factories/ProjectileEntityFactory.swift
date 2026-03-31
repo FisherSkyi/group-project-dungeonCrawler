@@ -48,7 +48,7 @@ public struct ProjectileEntityFactory: EntityFactory {
         world.addComponent(component: TransformComponent(position: position, rotation: bulletRotation, scale: 1), to: entity)
         world.addComponent(component: VelocityComponent(linear: direction * speed), to: entity)
         world.addComponent(component: SpriteComponent(content: .texture(name: spriteName), layer: .projectile), to: entity)
-        world.addComponent(component: ProjectileComponent(owner: owner), to: entity)
+        world.addComponent(component: OwnerComponent(ownerEntity: owner), to: entity)
         world.addComponent(component: EffectiveRangeComponent(base: effectiveRange), to: entity)
         world.addComponent(component: CollisionBoxComponent(size: collisionBoxSize), to: entity)
         world.addComponent(component: ContactDamageComponent(damage: damage), to: entity)

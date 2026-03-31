@@ -16,7 +16,6 @@ enum FiringBehaviors {
             speed: 300,
             effectiveRange: 400,
             damage: weapon.damage,
-            manaCost: weapon.manaCost,
             owner: owner
         ).make(in: world)
     }

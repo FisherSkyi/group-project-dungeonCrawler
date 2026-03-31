@@ -54,13 +54,3 @@ Adding a new subscriber (e.g. AchievementSystem listening for WeaponBrokenEvent)
 
 ### Projectile
 
-#### Why owner is not part of ProjectileSpec
-
-ProjectileSpec is intentionally definition-only data: how a projectile behaves (speed, range, damage, visuals, collision shape). Owner is not a definition concern; it is runtime context.
-
-When a weapon fires, the current shooter is known only at execution time (FireContext.owner). The same ProjectileSpec can be reused by different entities (player, enemies, summons), while ownership must be bound per shot.
-
-#### What should be in ProjectileSpec vs FireContext
-
-Rule of thumb: if a value can differ between two shots using the same weapon definition, it belongs in FireContext, not in ProjectileSpec.
-

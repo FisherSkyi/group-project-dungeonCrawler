@@ -74,16 +74,16 @@ public final class CollisionSystem: System {
         // Projectile hits an enemy — record damage event, skip physics resolution.
         // CombatSystem consumes this to apply damage and destroy the projectile.
         if aIsProjectile && bIsEnemy {
-            let damage = world.getComponent(type: ProjectileComponent.self, for: entityA)?.damage ?? 0
+            let damage = world.getComponent(type: ContactDamageComponent.self, for: entityA)?.damage ?? 0
             // Guard: a projectile should not damage its own owner
-            let ownerID = world.getComponent(type: ProjectileComponent.self, for: entityA)?.owner.id
+            let ownerID = world.getComponent(type: OwnerComponent.self, for: entityA)?.ownerEntity.id
             guard ownerID != entityB.id else { return }
             events.recordProjectileHitEnemy(projectile: entityA, enemy: entityB, damage: damage)
             return
         }
         if bIsProjectile && aIsEnemy {
-            let damage = world.getComponent(type: ProjectileComponent.self, for: entityB)?.damage ?? 0
-            let ownerID = world.getComponent(type: ProjectileComponent.self, for: entityB)?.owner.id
+            let damage = world.getComponent(type: ContactDamageComponent.self, for: entityB)?.damage ?? 0
+            let ownerID = world.getComponent(type: OwnerComponent.self, for: entityB)?.ownerEntity.id
             guard ownerID != entityA.id else { return }
             events.recordProjectileHitEnemy(projectile: entityB, enemy: entityA, damage: damage)
             return
