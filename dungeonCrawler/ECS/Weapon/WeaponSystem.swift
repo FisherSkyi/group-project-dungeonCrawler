@@ -73,22 +73,13 @@ public final class WeaponSystem: System {
                     mana.value.clampToMin()
                     print("current mana value: \(mana.value)")
                 }
-                
-                world.modifyComponent(type: WeaponComponent.self, for: weaponEntity) { weapon in
+
+                let projectileSpawnPosition = ownerTransform.position + mirroredOffset
+
+                world.modifyComponent(type: WeaponComponent.self, for: weaponEntity) { (weapon: inout WeaponComponent) in
+                    weapon.fireBehaviour(weapon, fireDirection, projectileSpawnPosition, ownerEntity, world)
                     weapon.lastFiredAt = gameTime
                 }
-                
-                // Only for projectile weapon now
-                ProjectileEntityFactory(
-                    from: ownerTransform.position,
-                    aimAt: fireDirection,
-                    speed: 300,
-                    effectiveRange: 400,
-                    damage: weaponComponent.damage,
-                    manaCost: weaponComponent.manaCost,
-                    owner: ownerEntity
-                ).make(in: world)
-                
             }
         }
     }

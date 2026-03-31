@@ -41,19 +41,12 @@ public struct WeaponEntityFactory: EntityFactory {
             layer: .weapon
         ), to: entity)
         world.addComponent(component: OwnerComponent(ownerEntity: player, offset: offset), to: entity)
-        world.addComponent(component: WeaponComponent(
-            type: weaponType,
-            damage: weaponType.damage,
-            manaCost: weaponType.manaCost,
-            attackSpeed: 1,
-            coolDownInterval: weaponType == .sniper ?  : ,
-            lastFiredAt: lastFiredAt
-        ), to: entity)
+        world.addComponent(component: weaponType.makeComponent(lastFiredAt: lastFiredAt), to: entity)
         return entity
     }
 }
 
-enum WeaponType: String {
+public enum WeaponType: String {
 
     case handgun
 //    case sword
@@ -69,19 +62,23 @@ enum WeaponType: String {
         }
     }
 
-    private func makeComponent(lastFiredAt: Float) -> WeaponComponent {
+    func makeComponent(lastFiredAt: Float) -> WeaponComponent {
         switch self {
         case .handgun:
             return WeaponComponent(
-                fireBehaviour: ,
-                manaCost: 10,
+                type: self,
+                fireBehaviour: FiringBehaviors.singleShot,
+                damage: damage,
+                manaCost: manaCost,
                 attackSpeed: 3,
                 coolDownInterval: TimeInterval(0.2),
                 lastFiredAt: lastFiredAt)
         case .sniper:
             return WeaponComponent(
-                fireBehaviour: ,
-                manaCost: 20,
+                type: self,
+                fireBehaviour: FiringBehaviors.singleShot,
+                damage: damage,
+                manaCost: manaCost,
                 attackSpeed: 1,
                 coolDownInterval: TimeInterval(0.8),
                 lastFiredAt: lastFiredAt)
@@ -107,5 +104,3 @@ enum WeaponType: String {
         }
     }
 }
-
-
