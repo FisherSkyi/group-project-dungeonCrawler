@@ -175,14 +175,31 @@ public final class LevelOrchestrator {
                 offset: weaponOffset,
                 scale: scale,
                 lastFiredAt: 0,
-                coolDownIntervel: <#T##TimeInterval?#>
+                coolDownIntervel: TimeInterval(0.2),
+                attackSpeed: 1,
+                effects: [
+                    ConsumeManaEffect(amount: 5),
+                    SpawnProjectileEffect(
+                        speed: 300, effectiveRange: 400,
+                        damage: 15, spriteName: "normalHandgunBullet",
+                        collisionSize: SIMD2<Float>(6, 6))
+                ]
             ).make(in: world)
             let sniper = WeaponEntityFactory(
-                ownedBy: player,
-                weaponType: .sniper,
+                player: player,
+                textureName: "Sniper",
                 offset: weaponOffset,
                 scale: scale,
-                lastFiredAt: 0
+                lastFiredAt: 0,
+                coolDownIntervel: TimeInterval(0.8),
+                attackSpeed: 1,
+                effects: [
+                    ConsumeManaEffect(amount: 20),
+                    SpawnProjectileEffect(
+                        speed: 300, effectiveRange: 400,
+                        damage: 50, spriteName: "normalHandgunBullet",
+                        collisionSize: SIMD2<Float>(6, 6))
+                ]
             ).make(in: world)
             // Sniper starts as secondary — hide its sprite until switched to
             world.removeComponent(type: SpriteComponent.self, from: sniper)
