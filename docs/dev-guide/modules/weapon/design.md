@@ -158,6 +158,14 @@ Interpretation of some existing configurable parameters:
 - `anchorPoint`: The anchor point of the weapon sprite, which determines the rotation point. If nil, it will default to the center of the sprite as (0.5, 0.5). We need this parameter because some weapon sprite may need to rotate around a different point other than the center, e.g. a sword may need to have anchor point at the handle instead of the center of the sprite to achieve better visual effect.
 - `initRotation`: The initial rotation of the weapon sprite in radians. If nil, it will default to 0.
 
+In side `effects`, there is more to configure depending on the type of effect you include
+
+For example, `ConsumeManaEffect` need the amount of mana to consume for each shot
+
+`SpawnProjectileEffect` need the speed of projectile, effective range of projectile, damage of projectile, sprite name of projectile and collision size of the projectile to be spawned.
+
+As an example, if you use `knight` as the `spriteName` in `SpawnProjectileEffect`, you will get a gun that fire knight (although kinda insane).
+
 ### Cooldown:
 ```swift
     private func isReadyToFire(gameTime: Float, timing: WeaponTimingComponent) -> Bool {
