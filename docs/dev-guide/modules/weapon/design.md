@@ -100,3 +100,68 @@ When a FireCommand is consumed by FiringSystem, it will first check if the weapo
         }
     }
 ```
+
+I hope user will find this design quite configurable and flexible. For example, since we already have handgun, it will be very easy to create other gun type like sniper or assault rifle by simply reusing the projectile spawning effect and just tweaking the parameters (e.g. damage, projectile speed, fire rate, etc).
+
+For example, let's say we want to create a Rifle AK-47, we can modify argument to `WeaponEntityFactory`
+
+```swift
+    // handgun
+    let handgun = WeaponEntityFactory(
+        player: player,
+        textureName: "handgun",
+        offset: weaponOffset,
+        scale: scale,
+        lastFiredAt: 0,
+        coolDownIntervel: TimeInterval(0.2),
+        attackSpeed: 1,
+        effects: [
+            ConsumeManaEffect(amount: 5),
+            SpawnProjectileEffect(
+                speed: 300, effectiveRange: 400,
+                damage: 15, spriteName: "normalHandgunBullet",
+                collisionSize: SIMD2<Float>(6, 6))
+        ],
+        anchorPoint: nil,
+        initRotation: nil
+    ).make(in: world)
+    // AK-47
+    let ak47 = WeaponEntityFactory(
+        player: player,
+        textureName: "ak47",
+        offset: weaponOffset,
+        scale: scale,
+        lastFiredAt: 0,
+        coolDownIntervel: TimeInterval(0.1),
+        attackSpeed: 1,
+        effects: [
+            ConsumeManaEffect(amount: 5),
+            SpawnProjectileEffect(
+                speed: 400, effectiveRange: 400,
+                damage: 20, spriteName: "normalAK47Bullet",
+                collisionSize: SIMD2<Float>(6, 6))
+        ],
+        anchorPoint: nil,
+        initRotation: nil
+    ).make(in: world)
+```
+
+Interpretation of some existing configurable parameters:
+
+- `textureName`: The name of the texture to be used for the **weapon** sprite.
+- `offset`: The position offset of the weapon sprite relative to the owner (player or enemy).
+- `scale`: The scale of the weapon sprite (dependent on the texture).
+- `lastFiredAt`: The **absolute** timestamp of the last time the weapon was fired, used for cooldown calculation. See [Cooldown](#cooldown) below for more details.
+- `coolDownInterval`: The time interval between two consecutive shots. See [Cooldown](#cooldown) below for more details.
+- `attackSpeed`: A multiplier that can be used by effects to modify the firing behavior. For example, it can be used to increase the speed of projectile or reduce the cooldown time if needed (currently not in used by 04/02/2026)
+- `effects`: A list of effects that will be applied when the weapon is fired. See [Effects Section](#what-is-weaponeffect) above for more details.
+- `anchorPoint`: The anchor point of the weapon sprite, which determines the rotation point. If nil, it will default to the center of the sprite as (0.5, 0.5). We need this parameter because some weapon sprite may need to rotate around a different point other than the center, e.g. a sword may need to have anchor point at the handle instead of the center of the sprite to achieve better visual effect.
+- `initRotation`: The initial rotation of the weapon sprite in radians. If nil, it will default to 0.
+
+### Cooldown:
+```swift
+    private func isReadyToFire(gameTime: Float, timing: WeaponTimingComponent) -> Bool {
+        guard let cooldown = timing.coolDownInterval else { return true }
+        return (gameTime - timing.lastFiredAt) >= Float(cooldown)
+    }
+```
