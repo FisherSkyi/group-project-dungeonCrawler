@@ -123,6 +123,7 @@ class GameScene: SKScene {
         commandQueues.register(FireCommand.self)
         commandQueues.register(JoystickRenderCommand.self)
         systemManager.register(InputSystem(commandQueues: commandQueues))
+        systemManager.register(WeaponDropSystem(commandQueues: commandQueues))
         systemManager.register(EnemyAISystem())
         systemManager.register(HealthSystem(destructionQueue: destructionQueue, playerDeathEvent: playerDeathEvent))
         systemManager.register(ManaSystem())

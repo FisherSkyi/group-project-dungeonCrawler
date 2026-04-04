@@ -75,7 +75,6 @@ public final class InputSystem: System {
                             content: .texture(name: render.textureName),
                             layer: .weapon,
                             anchorPoint: render.anchorPoint,
-                            
                         ),
                         to: newPrimary
                     )
@@ -87,8 +86,6 @@ public final class InputSystem: System {
                 }
             }
         }
-
-        while commandQueues.pop(DropWeaponCommand.self) != nil {}
         while commandQueues.pop(PickupCommand.self) != nil {}
     }
 }
