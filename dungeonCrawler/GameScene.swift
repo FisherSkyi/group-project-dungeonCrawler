@@ -116,6 +116,8 @@ class GameScene: SKScene {
 
         systemManager.register(LevelTransitionSystem(orchestrator: levelOrchestrator))
         commandQueues.register(SwitchWeaponCommand.self)
+        commandQueues.register(DropWeaponCommand.self)
+        commandQueues.register(PickupCommand.self)
         commandQueues.register(MoveCommand.self)
         commandQueues.register(AimCommand.self)
         commandQueues.register(FireCommand.self)
