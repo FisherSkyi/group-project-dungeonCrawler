@@ -68,9 +68,8 @@ Also add the corresponding texture asset to the asset catalog.
 
 All properties are required by the compiler, so a new definition cannot be accidentally left incomplete.
 
-No changes to `EnemyTagComponent` or `EnemyAISystem` are needed. To give the new type different AI behaviour, pass a custom `EnemyStateComponent` when constructing the factory, or add one after creation.
+No changes to `EnemyTagComponent` or `EnemyAISystem` are needed. To give the new type different AI behaviour, replace the `EnemyStateComponent` on the entity after creation using `world.addComponent` (which overwrites any existing component of the same type):
 
-For example, a stationary shooter that orbits the player when in chase mode:
 ```swift
 let enemy = EnemyEntityFactory(at: position, type: .goblin, baseScale: scale).make(in: world)
 world.addComponent(
@@ -83,5 +82,7 @@ world.addComponent(
     to: enemy
 )
 ```
+
+`EnemyStateComponent`'s initializer has defaults for all parameters (`detectionRadius: 150`, `loseRadius: 225`, `wanderStrategy: WanderStrategy()`, `chaseStrategy: StraightLineChaseStrategy()`), so you only need to supply the fields you want to override.
 
 See [Enemy AI System](./enemyAISystem.md) for all available strategies and configurable fields.
