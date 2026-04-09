@@ -16,17 +16,17 @@ public struct TimidStrategy: EnemyStrategy {
     public var detectionRadius: Float
     public var loseRadius: Float?
     public var fleeThreshold: Float
-    public var wanderBehaviour: WanderBehaviour
+    public var wanderBehaviour: any EnemyBehaviour
     public var attackBehaviour: any EnemyBehaviour
-    public var fleeBehaviour: FleeBehaviour
+    public var fleeBehaviour: any EnemyBehaviour
 
     public init(
         detectionRadius: Float = 150,
         loseRadius: Float? = 225,
         fleeThreshold: Float = 0.2,
-        wanderBehaviour: WanderBehaviour = WanderBehaviour(),
+        wanderBehaviour: any EnemyBehaviour = WanderBehaviour(),
         attackBehaviour: any EnemyBehaviour = ChaseBehaviour(),
-        fleeBehaviour: FleeBehaviour = FleeBehaviour()
+        fleeBehaviour: any EnemyBehaviour = FleeBehaviour()
     ) {
         self.detectionRadius = detectionRadius
         self.loseRadius = loseRadius

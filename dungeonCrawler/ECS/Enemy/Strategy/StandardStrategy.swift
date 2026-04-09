@@ -16,13 +16,13 @@ public struct StandardStrategy: EnemyStrategy {
 
     public var detectionRadius: Float
     public var loseRadius: Float?
-    public var wanderBehaviour: WanderBehaviour
+    public var wanderBehaviour: any EnemyBehaviour
     public var attackBehaviour: any EnemyBehaviour
 
     public init(
         detectionRadius: Float = 150,
         loseRadius: Float? = 225,
-        wanderBehaviour: WanderBehaviour = WanderBehaviour(),
+        wanderBehaviour: any EnemyBehaviour = WanderBehaviour(),
         attackBehaviour: any EnemyBehaviour = ChaseBehaviour()
     ) {
         self.detectionRadius = detectionRadius
