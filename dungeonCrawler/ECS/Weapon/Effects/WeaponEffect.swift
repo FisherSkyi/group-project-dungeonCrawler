@@ -8,5 +8,5 @@
 import Foundation
 
 public protocol WeaponEffect {
-    func apply(context: FireContext) -> FireEffectResult
+    func apply(context: FireContext) -> any FireEffectResult
 }
