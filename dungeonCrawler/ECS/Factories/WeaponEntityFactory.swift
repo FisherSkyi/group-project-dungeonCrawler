@@ -20,30 +20,18 @@ public struct WeaponEntityFactory: EntityFactory {
     let initRotation: Float
     var initLocation: SIMD2<Float>? = nil
 
-    public init(
-        player: Entity?,
-        textureName: String,
-        offset: SIMD2<Float> = .zero,
-        scale: Float = 1,
-        lastFiredAt: Float = 0,
-        coolDownIntervel: TimeInterval?,
-        attackSpeed: Float?,
-        effects: [any WeaponEffect],
-        anchorPoint: SIMD2<Float>?,
-        initRotation: Float?,
-        initLocation: SIMD2<Float>?
-    ) {
+    public init(player: Entity?, spec: WeaponDefinition) {
         self.player = player
-        self.textureName = textureName
-        self.offset = offset
-        self.scale = scale
-        self.lastFiredAt = lastFiredAt
-        self.coolDownIntervel = coolDownIntervel
-        self.attackSpeed = attackSpeed
-        self.effects = effects
-        self.anchorPoint = anchorPoint ?? SIMD2<Float>(0.5, 0.5)
-        self.initRotation = initRotation ?? 0
-        self.initLocation = initLocation
+        self.textureName = spec.textureName
+        self.offset = spec.offset
+        self.scale = spec.scale
+        self.lastFiredAt = spec.lastFiredAt ?? 0
+        self.coolDownIntervel = spec.cooldown
+        self.attackSpeed = spec.attackSpeed
+        self.effects = spec.effects
+        self.anchorPoint = spec.anchorPoint ?? SIMD2<Float>(0.5, 0.5)
+        self.initRotation = spec.initRotation ?? 0
+        self.initLocation = spec.initLocation
     }
 
     /// Components include:
@@ -90,4 +78,6 @@ public struct WeaponEntityFactory: EntityFactory {
 
         return entity
     }
+    
+    
 }
