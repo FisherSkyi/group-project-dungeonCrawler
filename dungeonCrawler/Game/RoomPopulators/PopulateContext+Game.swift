@@ -30,7 +30,7 @@ extension PopulateContext {
     @discardableResult
     public mutating func spawnWeapon(at position: SIMD2<Float>) -> Entity {
         let sniperDefinition = WeaponType.sniper.baseDefinition
-        let weapon = WeaponEntityFactory(base: sniperDefinition).make(in: world)
+        let weapon = WeaponEntityFactory(base: sniperDefinition).make(in: world, initLocation: position)
         world.addComponent(
             component: SpriteComponent(
                 content: .texture(name: sniperDefinition.textureName),
