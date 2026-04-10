@@ -8,9 +8,9 @@
 import Foundation
 import simd
 
-/// Stores the current wander destination for an enemy using WanderStrategy.
-/// Added lazily by WanderStrategy on first update — enemies that do not wander
-/// (e.g. stationary tower) will never have this component.
+/// Stores the current wander destination for an entity using WanderBehaviour.
+/// Added lazily by WanderBehaviour on first update and removed on deactivate —
+/// entities that do not wander will never have this component.
 public struct WanderTargetComponent: Component {
     public var target: SIMD2<Float>?
 

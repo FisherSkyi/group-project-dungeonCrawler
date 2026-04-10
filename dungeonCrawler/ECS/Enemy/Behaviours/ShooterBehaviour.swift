@@ -9,9 +9,14 @@ import Foundation
 import simd
 
 /// A basic behaviour for shooter-type enemies.
-/// The enemy picks a target spot within an annular zone around the player,
+/// The entity picks a target spot within an annular zone around the chase target (context.playerPos),
 /// walks to it, briefly stops, then picks another spot — forming a zigzag arc.
-/// Target positions are stored as polar coords relative to the player in ShooterBasicComponent.
+/// Target positions are stored as polar coords relative to the chase target in ShooterBasicComponent.
+///
+/// - Note: The arc constraint (arcRange) is only applied when picking a new target hop.
+///   If the chase target moves significantly mid-hop, the current target's angle relative
+///   to the new chase target position may fall outside the original arc range.
+///   This is accepted as-is; rapid target movement will produce slightly erratic arcs.
 public struct ShooterBehaviour: EnemyBehaviour {
 
     public var innerRadius: Float

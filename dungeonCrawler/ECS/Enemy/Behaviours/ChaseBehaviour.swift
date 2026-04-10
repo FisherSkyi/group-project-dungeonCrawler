@@ -8,7 +8,9 @@
 import Foundation
 import simd
 
-/// Moves the enemy directly toward the player at a fixed speed.
+/// Moves the entity directly toward the chase target (context.playerPos) at a fixed speed.
+/// The chase target is whatever position the strategy supplies — typically the player,
+/// but could be a taunt pet or any other point of interest in future.
 public struct ChaseBehaviour: EnemyBehaviour {
 
     public var speed: Float
