@@ -78,6 +78,4 @@ public struct WeaponEntityFactory: EntityFactory {
 
         return entity
     }
-    
-    
 }
