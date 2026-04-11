@@ -8,7 +8,7 @@ public struct WeaponBase {
     let lastFiredAt: Float?
     let cooldown: TimeInterval?
     let attackSpeed: Float?
-    let effects: [WeaponEffect]
+    let effects: [any WeaponEffect]
     let anchorPoint: SIMD2<Float>?
     let initRotation: Float?
 }

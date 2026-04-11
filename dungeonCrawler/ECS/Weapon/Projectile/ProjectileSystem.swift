@@ -26,14 +26,25 @@ public final class ProjectileSystem: System {
             and: VelocityComponent.self,
             and: TransformComponent.self,
             and: EffectiveRangeComponent.self) {
-            
+
+            // Apply gravity for parabolic projectiles (e.g. rockets)
+            if let gravityComp = world.getComponent(type: GravityComponent.self, for: projectileEntity) {
+                velocityComponent.linear.y -= gravityComp.gravity * dt
+                // Update rotation to follow the arc
+                let goingRight = velocityComponent.linear.x >= 0
+                let newRotation: Float = goingRight
+                    ? atan2(velocityComponent.linear.y, velocityComponent.linear.x)
+                    : -atan2(velocityComponent.linear.y, -velocityComponent.linear.x)
+                world.getComponent(type: TransformComponent.self, for: projectileEntity)?.rotation = newRotation
+            }
+
             world.getComponent(type: TransformComponent.self, for: projectileEntity)?.position += velocityComponent.linear * dt
             let distanceTraveled = simd_length(velocityComponent.linear) * dt
             var remainingRange: Float = .greatestFiniteMagnitude
-            
+
             rangeComponent.value.current -= distanceTraveled
             remainingRange = rangeComponent.value.current
-            
+
             if remainingRange <= 0 {
                 destructionQueue.enqueue(projectileEntity)
             }

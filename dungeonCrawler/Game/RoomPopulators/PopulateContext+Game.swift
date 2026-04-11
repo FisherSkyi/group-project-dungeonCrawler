@@ -26,7 +26,7 @@ extension PopulateContext {
         return enemy
     }
 
-    /// Spawns an weapon and automatically attaches a `RoomMemberComponent`.
+    /// Spawns weapons and automatically attaches a `RoomMemberComponent`.
     @discardableResult
     public mutating func spawnWeapon(at position: SIMD2<Float>) -> Entity {
         let sniperDefinition = WeaponType.sniper.baseDefinition
@@ -41,10 +41,25 @@ extension PopulateContext {
             component: RoomMemberComponent(roomID: roomID),
             to: weapon
         )
-        
-        // Register this position as occupied
         occupiedPositions.append(position)
-        
+
+        // Also spawn a bazooka nearby
+        if let bazookaPos = findEmptySpace() {
+            let bazookaDef = WeaponType.bazooka.baseDefinition
+            let bazookaWeapon = WeaponEntityFactory(base: bazookaDef).make(in: world, initLocation: bazookaPos)
+            world.addComponent(
+                component: SpriteComponent(
+                    content: .texture(name: bazookaDef.textureName),
+                    layer: .weapon,
+                    anchorPoint: bazookaDef.anchorPoint ?? SIMD2<Float>(0.5, 0.5)),
+                to: bazookaWeapon)
+            world.addComponent(
+                component: RoomMemberComponent(roomID: roomID),
+                to: bazookaWeapon
+            )
+            occupiedPositions.append(bazookaPos)
+        }
+
         return weapon
     }
 }
