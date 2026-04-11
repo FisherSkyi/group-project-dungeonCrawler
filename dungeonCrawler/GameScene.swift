@@ -42,6 +42,9 @@ class GameScene: SKScene {
     // MARK: - Game state
     private var isGameOver = false
 
+    // MARK: - Dungeon selection (set by LevelSelectScene before presenting)
+    var dungeonDefinition: DungeonDefinition? = DungeonLibrary.all.first
+
     // MARK: - Collision Events
     let collisionEvents  = CollisionEventBuffer()
     let destructionQueue = DestructionQueue()
@@ -49,8 +52,25 @@ class GameScene: SKScene {
 
     private var lastUpdateTime: TimeInterval = 0
 
+    override func sceneDidLoad() {
+        self.lastUpdateTime = 0
+
+        let background = SKSpriteNode(color: .darkGray, size: self.size)
+        background.position = .zero
+        background.zPosition = -1
+        addChild(background)
+        addChild(worldLayer)
+        addChild(uiLayer)
+    }
+
     override func didMove(to view: SKView) {
         super.didMove(to: view)
+
+        view.isMultipleTouchEnabled = true
+
+        setupSystems()
+        startLevel(1)
+
         view.addSubview(switchWeaponInput.button)
         view.addSubview(dropWeaponInput.button)
         view.addSubview(pickupInput.button)
@@ -74,23 +94,6 @@ class GameScene: SKScene {
         ])
     }
 
-    override func sceneDidLoad() {
-        self.lastUpdateTime = 0
-
-        let background = SKSpriteNode(color: .darkGray, size: self.size)
-        background.position = .zero
-        background.zPosition = -1
-        addChild(background)
-
-        addChild(worldLayer)
-        addChild(uiLayer)
-
-        view?.isMultipleTouchEnabled = true
-
-        setupSystems()
-        startLevel(1)
-    }
-
     // MARK: - System wiring
 
     private func setupSystems() {
@@ -102,16 +105,19 @@ class GameScene: SKScene {
         let registryLoader = TileRegistryLoader()
         tileAdapter = SpriteKitTileMapAdapter(worldLayer: worldLayer, registryLoader: registryLoader)
 
-        // Build the dungeon manager.
+        // Build the dungeon manager using the selected dungeon's layout + theme.
         var constructionConfig = BoxRoomConstructor.Config()
         constructionConfig.renderVisualSprites = false  // tilemap handles visuals
+        
+        guard let dungeonDefinition = dungeonDefinition else {
+            fatalError("No DungeonDefinition available.")
+        }
+        
         levelOrchestrator = LevelOrchestrator(
-            layoutStrategy:  LinearDungeonLayout(
-                roomCount:  3,
-                enemyPool:  [.charger, .mummy, .ranger]
-            ),
+            layoutStrategy:  dungeonDefinition.layoutStrategy,
             roomConstructor: BoxRoomConstructor(config: constructionConfig)
         )
+        levelOrchestrator.currentTheme    = dungeonDefinition.theme
         levelOrchestrator.tileMapRenderer = tileAdapter
 
         systemManager.register(RoomTransitionSystem(orchestrator: levelOrchestrator))

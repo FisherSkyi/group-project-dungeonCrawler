@@ -212,21 +212,25 @@ public final class LevelGenerationManager {
             let corridorLen = y1 - y0
             guard corridorLen > 0 else { return }
             let midX = fromSpec.bounds.center.x
-            let midY = (y0 + y1) / 2
 
             let bounds = RoomBounds(origin: SIMD2(midX - width / 2, y0), size: SIMD2(width, corridorLen))
             corridorBounds = bounds
 
             makeCorridorEntity(position: bounds.center, size: bounds.size, isWall: false, roomID: fromSpec.id, world: world)
-            
+
             let t = wallThickness
-            let wall1Pos = SIMD2(midX + width / 2 + t / 2, midY)
-            let wall1Size = SIMD2(t, corridorLen)
+            // Side walls extend into the room's north wall frame to seal the doorframe sides.
+            let wallStartY     = y0 - WorldConstants.northCorridorFrameDepth
+            let sideWallHeight = y1 - wallStartY
+            let sideWallMidY   = (wallStartY + y1) / 2
+
+            let wall1Pos = SIMD2(midX + width / 2 + t / 2, sideWallMidY)
+            let wall1Size = SIMD2(t, sideWallHeight)
             makeCorridorEntity(position: wall1Pos, size: wall1Size, isWall: true, roomID: fromSpec.id, world: world)
             structuralBounds.append((center: wall1Pos, size: wall1Size))
-            
-            let wall2Pos = SIMD2(midX - width / 2 - t / 2, midY)
-            let wall2Size = SIMD2(t, corridorLen)
+
+            let wall2Pos = SIMD2(midX - width / 2 - t / 2, sideWallMidY)
+            let wall2Size = SIMD2(t, sideWallHeight)
             makeCorridorEntity(position: wall2Pos, size: wall2Size, isWall: true, roomID: fromSpec.id, world: world)
             structuralBounds.append((center: wall2Pos, size: wall2Size))
 
@@ -244,21 +248,25 @@ public final class LevelGenerationManager {
             let corridorLen = y1 - y0
             guard corridorLen > 0 else { return }
             let midX = fromSpec.bounds.center.x
-            let midY = (y0 + y1) / 2
 
             let bounds = RoomBounds(origin: SIMD2(midX - width / 2, y0), size: SIMD2(width, corridorLen))
             corridorBounds = bounds
 
             makeCorridorEntity(position: bounds.center, size: bounds.size, isWall: false, roomID: fromSpec.id, world: world)
-            
+
             let t = wallThickness
-            let wall1Pos = SIMD2(midX + width / 2 + t / 2, midY)
-            let wall1Size = SIMD2(t, corridorLen)
+            // Side walls extend into the room's south wall frame to seal the doorframe sides.
+            let wallEndY       = y1 + t   // south wall is one tile thick
+            let sideWallHeight = wallEndY - y0
+            let sideWallMidY   = (y0 + wallEndY) / 2
+
+            let wall1Pos = SIMD2(midX + width / 2 + t / 2, sideWallMidY)
+            let wall1Size = SIMD2(t, sideWallHeight)
             makeCorridorEntity(position: wall1Pos, size: wall1Size, isWall: true, roomID: fromSpec.id, world: world)
             structuralBounds.append((center: wall1Pos, size: wall1Size))
-            
-            let wall2Pos = SIMD2(midX - width / 2 - t / 2, midY)
-            let wall2Size = SIMD2(t, corridorLen)
+
+            let wall2Pos = SIMD2(midX - width / 2 - t / 2, sideWallMidY)
+            let wall2Size = SIMD2(t, sideWallHeight)
             makeCorridorEntity(position: wall2Pos, size: wall2Size, isWall: true, roomID: fromSpec.id, world: world)
             structuralBounds.append((center: wall2Pos, size: wall2Size))
 

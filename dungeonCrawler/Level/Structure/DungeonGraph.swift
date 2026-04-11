@@ -147,8 +147,9 @@ public struct DungeonGraph {
                 offset:    edge.data.relativeOffset
             )
             return Doorway(
-                position:        position,
-                direction:       edge.data.exitDirection
+                position:  position,
+                direction: edge.data.exitDirection,
+                width:     edge.data.corridor.width
             )
         }
     }
