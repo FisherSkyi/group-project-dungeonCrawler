@@ -7,7 +7,7 @@ public struct CorridorSpecification {
 
     public init(
         length: Float,
-        width: Float = 64,
+        width: Float = 96,
         populator: RoomPopulatorStrategy = EmptyRoomPopulator()
     ) {
         self.length = length

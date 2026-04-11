@@ -26,4 +26,8 @@ public enum WorldConstants {
     /// The vertical inset applied to the north wall collision box to align it
     /// with the base of the rendered top wall.
     public static let topWallCollisionInset: Float = Float(topWallHeightTiles - 2) * wallThickness
+
+    /// How far north-corridor side walls extend into the room's north wall frame zone.
+    /// Seals the doorframe sides so players cannot slip sideways through the un-collided wall tiles.
+    public static let northCorridorFrameDepth: Float = wallThickness + topWallCollisionInset
 }
