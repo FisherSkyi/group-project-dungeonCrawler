@@ -3,7 +3,6 @@ import simd
 
 struct SpawnRocketEffect: WeaponEffect {
     let speed: Float
-    let effectiveRange: Float
     let damage: Float
     let spriteName: String
     let collisionSize: SIMD2<Float>
@@ -12,20 +11,18 @@ struct SpawnRocketEffect: WeaponEffect {
 
     init(
         speed: Float,
-        effectiveRange: Float,
         damage: Float,
         spriteName: String,
         collisionSize: SIMD2<Float>,
         gravity: Float = 300,
-        launchAngle: Float = .pi / 6
+        launchAngle: Float = 0
     ) {
         self.speed = speed
-        self.effectiveRange = effectiveRange
+        self.gravity = gravity
+        self.launchAngle = launchAngle
         self.damage = damage
         self.spriteName = spriteName
         self.collisionSize = collisionSize
-        self.gravity = gravity
-        self.launchAngle = launchAngle
     }
 
     func apply(context: FireContext) -> FireEffectResult {
@@ -36,6 +33,16 @@ struct SpawnRocketEffect: WeaponEffect {
         let loftedDir = SIMD2<Float>(
             dir.x * cosA - dir.y * sinA,
             dir.x * sinA + dir.y * cosA
+        )
+        let fireAngle = atan2(loftedDir.y, loftedDir.x)
+        guard (0 ... .pi).contains(fireAngle) else {
+            return .blocked("fire down not allowed")
+        }
+        let vx0 = Double(abs(speed * cos(fireAngle)))
+        let vz0 = Double(speed * sin(fireAngle))
+        let g = Double(gravity)
+        let effectiveRange = Float(
+            (vz0 * Double(speed) + vx0 * vx0 * asinh(vz0 / vx0)) / g
         )
 
         let entity = ProjectileEntityFactory(

@@ -19,6 +19,10 @@ public final class ProjectileSystem: System {
         self.destructionQueue = destructionQueue
     }
     
+    private func updateVelocityInTwoD(velocity: inout VelocityComponent, gravity: GravityComponent) {
+        
+    }
+    
     public func update(deltaTime: Double, world: World) {
         let dt = Float(deltaTime)
         for (projectileEntity, _, velocityComponent, _, rangeComponent) in world.entities(

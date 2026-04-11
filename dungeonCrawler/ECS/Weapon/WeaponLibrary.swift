@@ -73,17 +73,19 @@ enum WeaponType: CaseIterable {
             WeaponBase(
                 textureName: "bazooka",
                 offset: SIMD2<Float>(10, -5),
-                scale: 0.5,
+                scale: 0.4,
                 lastFiredAt: 0,
-                cooldown: TimeInterval(1.5),
+                cooldown: TimeInterval(1),
                 attackSpeed: 1,
                 effects: [
-                    ConsumeManaEffect(amount: 30),
+                    ConsumeManaEffect(amount: 3),
                     SpawnRocketEffect(
-                        speed: 250, effectiveRange: 600,
-                        damage: 80, spriteName: "rocket",
+                        speed: 300,
+                        damage: 80,
+                        spriteName: "rocket",
                         collisionSize: SIMD2<Float>(10, 10),
-                        gravity: 300, launchAngle: .pi / 6)
+                        gravity: 200,
+                        launchAngle: 0)
                 ],
                 anchorPoint: nil,
                 initRotation: nil,
