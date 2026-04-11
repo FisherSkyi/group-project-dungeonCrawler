@@ -12,6 +12,7 @@ enum WeaponType: CaseIterable {
     case handgun
     case sword
     case sniper
+    case bazooka
     
     var baseDefinition: WeaponBase {
         switch self {
@@ -64,6 +65,27 @@ enum WeaponType: CaseIterable {
                         speed: 400, effectiveRange: 800,
                         damage: 50, spriteName: "normalHandgunBullet",
                         collisionSize: SIMD2<Float>(6, 6))
+                ],
+                anchorPoint: nil,
+                initRotation: nil,
+            )
+        case .bazooka:
+            WeaponBase(
+                textureName: "bazooka",
+                offset: SIMD2<Float>(10, -5),
+                scale: 0.4,
+                lastFiredAt: 0,
+                cooldown: TimeInterval(1),
+                attackSpeed: 1,
+                effects: [
+                    ConsumeManaEffect(amount: 3),
+                    SpawnRocketEffect(
+                        speed: 300,
+                        damage: 80,
+                        spriteName: "rocket",
+                        collisionSize: SIMD2<Float>(10, 10),
+                        gravity: 200,
+                        launchAngle: 0)
                 ],
                 anchorPoint: nil,
                 initRotation: nil,
