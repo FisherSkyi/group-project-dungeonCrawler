@@ -43,6 +43,11 @@ public final class PickupSystem: System {
                     ?? defaultWeaponOffset
 
                 world.removeComponent(type: SpriteComponent.self, from: pickedWeapon)
+                if let secondWeapon = equipped.secondaryWeapon {
+                    world.removeComponent(type: OwnerComponent.self, from: secondWeapon)
+                    guard let renderInfo = world.getComponent(type: WeaponRenderComponent.self, for: secondWeapon) else { fatalError("secondWeapon missing WeaponRenderComponent") }
+                    world.addComponent(component: SpriteComponent(textureName: renderInfo.textureName), to: secondWeapon)
+                }
                 equipped.secondaryWeapon = pickedWeapon
                 world.addComponent(
                     component: OwnerComponent(ownerEntity: player, offset: weaponOffset),
