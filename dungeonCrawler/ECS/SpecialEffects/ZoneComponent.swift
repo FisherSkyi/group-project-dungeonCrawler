@@ -7,7 +7,7 @@
 
 import Foundation
 
-class FireZoneComponent: Component {
+class ZoneComponent: Component {
     var radius: Float
     var damagePerSecond: Float
     var duration: Float
