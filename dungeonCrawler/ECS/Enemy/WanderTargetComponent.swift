@@ -11,7 +11,7 @@ import simd
 /// Stores the current wander destination for an entity using WanderBehaviour.
 /// Added lazily by WanderBehaviour on first update and removed on deactivate —
 /// entities that do not wander will never have this component.
-public struct WanderTargetComponent: Component {
+public class WanderTargetComponent: Component {
     public var target: SIMD2<Float>?
 
     public init(target: SIMD2<Float>? = nil) {

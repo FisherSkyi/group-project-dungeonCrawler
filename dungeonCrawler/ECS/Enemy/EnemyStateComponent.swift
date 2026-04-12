@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct EnemyStateComponent: Component {
+public class EnemyStateComponent: Component {
     public var strategy: any EnemyStrategy
 
     public init(strategy: any EnemyStrategy = StandardStrategy()) {

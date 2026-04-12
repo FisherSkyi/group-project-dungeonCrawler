@@ -186,9 +186,9 @@ final class ShooterBehaviourTests: XCTestCase {
         XCTAssertNotNil(comp.targetRadius)
     }
 
-    // MARK: - Target tracks player
+    // MARK: - Target tracks chase target
 
-    func testTargetFollowsPlayerMovement() {
+    func testTargetFollowsChaseTargetMovement() {
         let behaviour = ShooterBehaviour(moveSpeed: 60)
         let enemy = makeEnemy(at: SIMD2(0, 50))
         setTarget(on: enemy, angle: 0, radius: 150)

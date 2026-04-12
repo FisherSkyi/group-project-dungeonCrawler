@@ -156,11 +156,9 @@ final class WanderBehaviourTests: XCTestCase {
         behaviour.update(entity: enemy, context: context)
         let target2 = world.getComponent(type: WanderTargetComponent.self, for: enemy)!.target
 
-        let t1 = try XCTUnwrap(target1)
-        let t2 = try XCTUnwrap(target2)
-        XCTAssertEqual(t1.x, t2.x, accuracy: 0.001,
+        XCTAssertEqual(target1!.x, target2!.x, accuracy: Float(0.001),
                        "Wander target should persist while enemy hasn't arrived")
-        XCTAssertEqual(t1.y, t2.y, accuracy: 0.001)
+        XCTAssertEqual(target1!.y, target2!.y, accuracy: Float(0.001))
     }
 
     func testVelocityDirectionIsConsistentBeforeArrival() {

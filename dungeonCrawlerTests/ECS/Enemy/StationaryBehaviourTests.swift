@@ -13,14 +13,31 @@ import simd
 final class StationaryBehaviourTests: XCTestCase {
 
     var world: World!
+    
+    // Properties for tracked entities and components
+    var enemy: Entity!
+    var transform: TransformComponent!
+    var velocity: VelocityComponent!
 
     override func setUp() {
         super.setUp()
-        world = World()
+        world    = World()
+        
+        // Initialize components with default test values
+        transform = TransformComponent(position: SIMD2<Float>(0, 0))
+        velocity  = VelocityComponent(linear: .zero)
+        
+        // Initialize main test entity
+        enemy = world.createEntity()
+        world.addComponent(component: transform, to: enemy)
+        world.addComponent(component: velocity, to: enemy)
     }
 
     override func tearDown() {
-        world = nil
+        world     = nil
+        enemy     = nil
+        transform = nil
+        velocity  = nil
         super.tearDown()
     }
 
@@ -48,9 +65,8 @@ final class StationaryBehaviourTests: XCTestCase {
 
         behaviour.update(entity: enemy, context: makeContext(entity: enemy, playerPos: SIMD2(100, 0)))
 
-        let vel = world.getComponent(type: VelocityComponent.self, for: enemy)!
-        XCTAssertEqual(vel.linear.x, 0, accuracy: 0.001)
-        XCTAssertEqual(vel.linear.y, 0, accuracy: 0.001)
+        XCTAssertEqual(velocity.linear.x, 0, accuracy: 0.001)
+        XCTAssertEqual(velocity.linear.y, 0, accuracy: 0.001)
     }
 
     func testVelocityUnchangedWhenNonZero() {
@@ -71,9 +87,8 @@ final class StationaryBehaviourTests: XCTestCase {
 
         behaviour.update(entity: enemy, context: makeContext(entity: enemy, playerPos: SIMD2(0, 0)))
 
-        let updatedTransform = world.getComponent(type: TransformComponent.self, for: enemy)!
-        XCTAssertEqual(updatedTransform.position.x, 42, accuracy: 0.001)
-        XCTAssertEqual(updatedTransform.position.y, 99, accuracy: 0.001)
+        XCTAssertEqual(transform.position.x, 42, accuracy: 0.001)
+        XCTAssertEqual(transform.position.y, 99, accuracy: 0.001)
     }
 
     func testPlayerPositionHasNoEffect() {
@@ -84,9 +99,8 @@ final class StationaryBehaviourTests: XCTestCase {
         behaviour.update(entity: enemy, context: makeContext(entity: enemy, playerPos: SIMD2(500, 500)))
         behaviour.update(entity: enemy, context: makeContext(entity: enemy, playerPos: SIMD2(-999, 0)))
 
-        let vel = world.getComponent(type: VelocityComponent.self, for: enemy)!
-        XCTAssertEqual(vel.linear.x, 0, accuracy: 0.001)
-        XCTAssertEqual(vel.linear.y, 0, accuracy: 0.001)
+        XCTAssertEqual(velocity.linear.x, 0, accuracy: 0.001)
+        XCTAssertEqual(velocity.linear.y, 0, accuracy: 0.001)
     }
 
     func testMultipleUpdatesHaveNoEffect() {
@@ -97,8 +111,8 @@ final class StationaryBehaviourTests: XCTestCase {
             behaviour.update(entity: enemy, context: makeContext(entity: enemy, playerPos: SIMD2(100, 100)))
         }
 
-        let vel = world.getComponent(type: VelocityComponent.self, for: enemy)!
-        XCTAssertEqual(vel.linear.x, 0, accuracy: 0.001)
-        XCTAssertEqual(vel.linear.y, 0, accuracy: 0.001)
+        XCTAssertEqual(velocity.linear.x, 0, accuracy: 0.001)
+        XCTAssertEqual(velocity.linear.y, 0, accuracy: 0.001)
+        XCTAssertEqual(transform.position.x, 10, accuracy: 0.001)
     }
 }
