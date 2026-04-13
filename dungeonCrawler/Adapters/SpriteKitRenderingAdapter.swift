@@ -31,7 +31,8 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         sprite: SpriteComponent,
         facing: FacingComponent?,
         velocity: VelocityComponent?,
-        health: HealthComponent?
+        health: HealthComponent?,
+        hasDirectionalAnimation: Bool
     ) {
         guard let worldLayer else { return }
         let node = node(for: entity, sprite: sprite, in: worldLayer)
@@ -39,9 +40,12 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         node.position = transform.cgPoint
         node.zRotation = CGFloat(transform.rotation)
 
-        // We need to keep velocity here as some entity don't have facing component (eg. enemy, projectile)
+        // Entities whose textures already encode left/right (directional animations)
+        // must not be xScale-mirrored — the frame itself carries the facing.
         var flipFactor: CGFloat = node.xScale < 0 ? -1.0 : 1.0
-        if let facing {
+        if hasDirectionalAnimation {
+            flipFactor = 1.0
+        } else if let facing {
             flipFactor = facing.facing == .right ? 1.0 : -1.0
         } else if let velocity, velocity.linear.x != 0 {
             flipFactor = velocity.linear.x > 0 ? 1.0 : -1.0
