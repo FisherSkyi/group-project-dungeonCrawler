@@ -17,8 +17,8 @@ class GameScene: SKScene {
     // MARK: - Scene layers
     /// worldLayer moves each frame to implement camera tracking.
     private let worldLayer = SKNode()
-    /// uiLayer stays fixed — joystick, HUD lives here.
-    private let uiLayer    = SKNode()
+    /// uiLayer stays fixed — joystick, HUD, and overlays live here.
+    private let uiLayer = SKNode()
 
     // MARK: - Adapters
     private var renderingBackend: SpriteKitRenderingAdapter!
@@ -30,17 +30,23 @@ class GameScene: SKScene {
     // MARK: - Level service (owns the graph and room lifecycle)
     private var levelOrchestrator: LevelOrchestrator!
 
+    // MARK: - Overlay presenter
+    private lazy var overlayPresenter = GameOverlayPresenter(uiLayer: uiLayer, size: size)
+
     // MARK: - Command queues
     private let commandQueues = CommandQueues()
 
-    // MARK: - Input provider
-    private lazy var touchInput = TouchJoystickInputProvider(commandQueues: commandQueues)
+    // MARK: - Input providers
+    private lazy var touchInput        = TouchJoystickInputProvider(commandQueues: commandQueues)
     private lazy var switchWeaponInput = SwitchWeaponButtonInputProvider(commandQueues: commandQueues)
-    private lazy var dropWeaponInput = DropWeaponButtonInputProvider(commandQueues: commandQueues)
-    private lazy var pickupInput = PickupButtonInputProvider(commandQueues: commandQueues)
-    
+    private lazy var dropWeaponInput   = DropWeaponButtonInputProvider(commandQueues: commandQueues)
+    private lazy var pickupInput       = PickupButtonInputProvider(commandQueues: commandQueues)
+
     // MARK: - Game state
-    private var isGameOver = false
+    private var isGameOver     = false
+    private var isLevelCleared = false
+    /// Counts down the particle-effect duration before showing the level-clear overlay.
+    private var soulClearCountdown: Double = 0
 
     // MARK: - Dungeon selection (set by LevelSelectScene before presenting)
     var dungeonDefinition: DungeonDefinition? = DungeonLibrary.all.first
@@ -48,18 +54,21 @@ class GameScene: SKScene {
     // MARK: - Character animation (loaded once, reused across restarts)
     private var characterSheet: CharacterSheet?
 
-    // MARK: - Collision Events
-    let collisionEvents  = CollisionEventBuffer()
-    let destructionQueue = DestructionQueue()
-    let playerDeathEvent = PlayerDeathEvent()
+    // MARK: - Events
+    private let collisionEvents      = CollisionEventBuffer()
+    private let destructionQueue     = DestructionQueue()
+    private let playerDeathEvent     = PlayerDeathEvent()
+    private let bossRoomClearedEvent = BossRoomClearedEvent()
+    private let levelClearedEvent    = LevelClearedEvent()
 
     private var lastUpdateTime: TimeInterval = 0
 
-    override func sceneDidLoad() {
-        self.lastUpdateTime = 0
+    // MARK: - Lifecycle
 
+    override func sceneDidLoad() {
+        lastUpdateTime = 0
         let background = SKSpriteNode(color: .darkGray, size: self.size)
-        background.position = .zero
+        background.position  = .zero
         background.zPosition = -1
         addChild(background)
         addChild(worldLayer)
@@ -68,33 +77,10 @@ class GameScene: SKScene {
 
     override func didMove(to view: SKView) {
         super.didMove(to: view)
-
         view.isMultipleTouchEnabled = true
-
         setupSystems()
         startLevel(1)
-
-        view.addSubview(switchWeaponInput.button)
-        view.addSubview(dropWeaponInput.button)
-        view.addSubview(pickupInput.button)
-        NSLayoutConstraint.activate([
-            switchWeaponInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
-            switchWeaponInput.button.heightAnchor.constraint(equalTo: switchWeaponInput.button.widthAnchor),
-            switchWeaponInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.2),
-            switchWeaponInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.05),
-        ])
-        NSLayoutConstraint.activate([
-            dropWeaponInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
-            dropWeaponInput.button.heightAnchor.constraint(equalTo: switchWeaponInput.button.widthAnchor),
-            dropWeaponInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.1),
-            dropWeaponInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.2),
-        ])
-        NSLayoutConstraint.activate([
-            pickupInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
-            pickupInput.button.heightAnchor.constraint(equalTo: switchWeaponInput.button.widthAnchor),
-            pickupInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.2),
-            pickupInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.2),
-        ])
+        setupInputButtons(in: view)
     }
 
     // MARK: - System wiring
@@ -108,14 +94,13 @@ class GameScene: SKScene {
         let registryLoader = TileRegistryLoader()
         tileAdapter = SpriteKitTileMapAdapter(worldLayer: worldLayer, registryLoader: registryLoader)
 
-        // Build the dungeon manager using the selected dungeon's layout + theme.
-        var constructionConfig = BoxRoomConstructor.Config()
-        constructionConfig.renderVisualSprites = false  // tilemap handles visuals
-        
-        guard let dungeonDefinition = dungeonDefinition else {
+        guard let dungeonDefinition else {
             fatalError("No DungeonDefinition available.")
         }
-        
+
+        var constructionConfig = BoxRoomConstructor.Config()
+        constructionConfig.renderVisualSprites = false
+
         levelOrchestrator = LevelOrchestrator(
             layoutStrategy:  dungeonDefinition.layoutStrategy,
             roomConstructor: BoxRoomConstructor(config: constructionConfig)
@@ -124,17 +109,22 @@ class GameScene: SKScene {
         levelOrchestrator.tileMapRenderer = tileAdapter
 
         systemManager.register(RoomTransitionSystem(orchestrator: levelOrchestrator))
-        systemManager.register(RoomClearSystem(orchestrator: levelOrchestrator))
+        systemManager.register(RoomClearSystem(orchestrator: levelOrchestrator, bossRoomClearedEvent: bossRoomClearedEvent))
 
-        // Load character spritesheet and register animation textures with the rendering backend
-        let sheetLoader = CharacterSheetLoader()
-        if let sheet = sheetLoader.load() {
+        if let sheet = CharacterSheetLoader().load() {
             characterSheet = sheet
-            for (name, texture) in sheet.textureRegistry {
-                renderingBackend.registerTexture(texture, forName: name)
-            }
+            sheet.textureRegistry.forEach { renderingBackend.registerTexture($0.value, forName: $0.key) }
             systemManager.register(AnimationSystem())
+            systemManager.register(LoopingAnimationSystem())
+            systemManager.register(ParticleEffectSystem(destructionQueue: destructionQueue))
+            systemManager.register(SoulPickupSystem(
+                destructionQueue:      destructionQueue,
+                levelClearedEvent:     levelClearedEvent,
+                particleFrameNames:    sheet.particleEffectFrameNames,
+                particleFrameDuration: sheet.particleEffectFrameDuration
+            ))
         }
+
         commandQueues.register(SwitchWeaponCommand.self)
         commandQueues.register(DropWeaponCommand.self)
         commandQueues.register(PickupCommand.self)
@@ -143,7 +133,6 @@ class GameScene: SKScene {
         commandQueues.register(FireCommand.self)
         commandQueues.register(JoystickRenderCommand.self)
 
-        // Systems
         systemManager.register(InputSystem(commandQueues: commandQueues))
         systemManager.register(WeaponDropSystem(commandQueues: commandQueues))
         systemManager.register(PickupSystem(commandQueues: commandQueues))
@@ -168,76 +157,45 @@ class GameScene: SKScene {
     private func startLevel(_ levelNumber: Int) {
         levelOrchestrator.loadLevel(levelNumber, world: world)
 
-        // Camera entity — ViewportComponent holds live camera state.
         if world.entities(with: ViewportComponent.self).isEmpty {
             let cameraEntity = world.createEntity()
             world.addComponent(component: ViewportComponent(), to: cameraEntity)
         }
-        if let player = world.entities(with: PlayerTagComponent.self).first {
-            world.addComponent(component: CameraFocusComponent(), to: player)
 
-            // Attach animation if the character sheet loaded successfully
-            if let sheet = characterSheet {
-                // Scale 16px character frames
-                world.getComponent(type: TransformComponent.self, for: player)?.scale = 70.0 / 16.0
-                world.addComponent(component: AnimationComponent(
-                    animations:    sheet.animations,
-                    frameDuration: sheet.frameDuration
-                ), to: player)
-            }
+        if let player = world.entities(with: PlayerTagComponent.self).first,
+           let sheet  = characterSheet {
+            world.addComponent(component: CameraFocusComponent(), to: player)
+            world.getComponent(type: TransformComponent.self, for: player)?.scale = 70.0 / 16.0
+            world.addComponent(component: AnimationComponent(
+                animations:    sheet.animations,
+                frameDuration: sheet.frameDuration
+            ), to: player)
         }
     }
-    
-    // MARK: - Game Over
-     
-    private func handleGameOver() {
-        guard !isGameOver else { return }
-        isGameOver = true
- 
-        // Freeze the game loop
-        isPaused = true
- 
-        // Overlay — dark semi-transparent panel
-        let overlay = SKSpriteNode(color: SKColor(white: 0, alpha: 0.65), size: size)
-        overlay.position = .zero
-        overlay.zPosition = 100
-        overlay.name = "gameOverOverlay"
-        uiLayer.addChild(overlay)
- 
-        // "GAME OVER" label
-        let titleLabel = SKLabelNode(fontNamed: "AvenirNext-Bold")
-        titleLabel.text = "GAME OVER"
-        titleLabel.fontSize = 52
-        titleLabel.fontColor = SKColor(red: 0.9, green: 0.2, blue: 0.2, alpha: 1)
-        titleLabel.verticalAlignmentMode = .center
-        titleLabel.position = CGPoint(x: 0, y: 60)
-        titleLabel.zPosition = 101
-        overlay.addChild(titleLabel)
- 
-        // "Tap to Restart" hint
-        let hintLabel = SKLabelNode(fontNamed: "AvenirNext-Medium")
-        hintLabel.text = "Tap to restart"
-        hintLabel.fontSize = 24
-        hintLabel.fontColor = .white
-        hintLabel.verticalAlignmentMode = .center
-        hintLabel.position = CGPoint(x: 0, y: -20)
-        hintLabel.zPosition = 101
-        overlay.addChild(hintLabel)
-    }
- 
-    private func restartGame() {
-        // Clean up overlay
-        uiLayer.childNode(withName: "gameOverOverlay")?.removeFromParent()
- 
-        // Reset state flags
-        isGameOver = false
-        playerDeathEvent.reset()
-        isPaused = false
-        lastUpdateTime = 0
- 
-        // Tear down all ECS entities and reload
-        world.destroyAllEntities()
-        startLevel(1)
+
+    // MARK: - Input buttons layout
+
+    private func setupInputButtons(in view: SKView) {
+        view.addSubview(switchWeaponInput.button)
+        view.addSubview(dropWeaponInput.button)
+        view.addSubview(pickupInput.button)
+
+        NSLayoutConstraint.activate([
+            switchWeaponInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
+            switchWeaponInput.button.heightAnchor.constraint(equalTo: switchWeaponInput.button.widthAnchor),
+            switchWeaponInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.2),
+            switchWeaponInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.05),
+
+            dropWeaponInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
+            dropWeaponInput.button.heightAnchor.constraint(equalTo: switchWeaponInput.button.widthAnchor),
+            dropWeaponInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.1),
+            dropWeaponInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.2),
+
+            pickupInput.button.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.07),
+            pickupInput.button.heightAnchor.constraint(equalTo: switchWeaponInput.button.widthAnchor),
+            pickupInput.button.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -view.bounds.width * 0.2),
+            pickupInput.button.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -view.bounds.height * 0.2),
+        ])
     }
 
     // MARK: - Touch forwarding
@@ -274,17 +232,91 @@ class GameScene: SKScene {
         lastUpdateTime = currentTime
 
         systemManager.update(deltaTime: deltaTime, world: world)
-        
-        // Check for player death after all systems have run this frame
+
         if playerDeathEvent.playerDied {
             handleGameOver()
             return
         }
 
-        // Apply camera viewport to worldLayer after ECS update.
+        handleBossRoomCleared()
+        handleSoulCountdown(deltaTime: deltaTime)
+
         if let cameraEntity = world.entities(with: ViewportComponent.self).first,
            let viewport = world.getComponent(type: ViewportComponent.self, for: cameraEntity) {
             cameraAdapter.apply(viewport: viewport, screenCenter: .zero)
         }
+    }
+
+    // MARK: - Event handling
+
+    private func handleBossRoomCleared() {
+        guard let center = bossRoomClearedEvent.roomCenter,
+              let roomID = bossRoomClearedEvent.roomID,
+              let sheet  = characterSheet else { return }
+        bossRoomClearedEvent.consume()
+        SoulEntityFactory(
+            position:               center,
+            roomID:                 roomID,
+            animationFrameNames:    sheet.soulFrameNames,
+            animationFrameDuration: sheet.soulFrameDuration
+        ).make(in: world)
+    }
+
+    private func handleSoulCountdown(deltaTime: Double) {
+        if levelClearedEvent.triggered {
+            levelClearedEvent.reset()
+            let frames   = characterSheet?.particleEffectFrameNames.count ?? 1
+            let duration = characterSheet?.particleEffectFrameDuration   ?? 0.3
+            soulClearCountdown = Double(frames) * duration
+        }
+
+        guard soulClearCountdown > 0 else { return }
+        soulClearCountdown -= deltaTime
+        if soulClearCountdown <= 0 {
+            soulClearCountdown = 0
+            handleLevelCleared()
+        }
+    }
+
+    // MARK: - Game Over
+
+    private func handleGameOver() {
+        guard !isGameOver else { return }
+        isGameOver = true
+        isPaused   = true
+        overlayPresenter.showGameOver()
+    }
+
+    private func restartGame() {
+        overlayPresenter.removeGameOver()
+        isGameOver     = false
+        isLevelCleared = false
+        playerDeathEvent.reset()
+        isPaused       = false
+        lastUpdateTime = 0
+        world.destroyAllEntities()
+        startLevel(1)
+    }
+
+    // MARK: - Level Cleared
+
+    private func handleLevelCleared() {
+        guard !isLevelCleared else { return }
+        isLevelCleared = true
+        switchWeaponInput.button.isHidden = true
+        dropWeaponInput.button.isHidden   = true
+        pickupInput.button.isHidden       = true
+        isPaused = true
+        overlayPresenter.showLevelCleared { [weak self] in
+            self?.returnToLevelSelect()
+        }
+    }
+
+    private func returnToLevelSelect() {
+        guard let view else { return }
+        let scene = LevelSelectScene(size: size)
+        scene.anchorPoint = anchorPoint
+        scene.scaleMode   = scaleMode
+        view.presentScene(scene, transition: SKTransition.fade(withDuration: 0.6))
     }
 }
