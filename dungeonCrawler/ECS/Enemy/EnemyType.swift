@@ -31,7 +31,7 @@ public struct EnemyType {
 
     public static let ranger = EnemyType(
         textureName: "Ranger",
-        scale: 0.75,
+        scale: 0.2,
         mass: 5,
         contactDamage: 5.0,
         strategy: StandardStrategy(
@@ -45,7 +45,7 @@ public struct EnemyType {
 
     public static let tower = EnemyType(
         textureName: "Tower",
-        scale: 1.5,
+        scale: 3,
         mass: 20,
         contactDamage: 15.0,
         strategy: StandardStrategy(

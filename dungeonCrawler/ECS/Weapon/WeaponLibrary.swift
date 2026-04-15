@@ -20,7 +20,7 @@ enum WeaponType: CaseIterable {
             WeaponBase(
                 textureName: "handgun",
                 offset: SIMD2<Float>(8, -18),
-                scale: WorldConstants.standardEntityScale,
+                scale: 3,
                 lastFiredAt: 0,
                 cooldown: TimeInterval(0.2),
                 attackSpeed: 1,
@@ -42,7 +42,7 @@ enum WeaponType: CaseIterable {
             WeaponBase(
                 textureName: "sword",
                 offset: SIMD2<Float>(20, -15),
-                scale: 0.3,
+                scale: 3,
                 lastFiredAt: 0,
                 cooldown: 0.5,
                 attackSpeed: 1,
@@ -61,7 +61,7 @@ enum WeaponType: CaseIterable {
             WeaponBase(
                 textureName: "Sniper",
                 offset: SIMD2<Float>(10, -8),
-                scale: WorldConstants.standardEntityScale,
+                scale: 3,
                 lastFiredAt: 0,
                 cooldown: TimeInterval(0.8),
                 attackSpeed: 1,
@@ -80,7 +80,7 @@ enum WeaponType: CaseIterable {
             WeaponBase(
                 textureName: "bazooka",
                 offset: SIMD2<Float>(10, -5),
-                scale: 0.4,
+                scale: 2,
                 lastFiredAt: 0,
                 cooldown: TimeInterval(1),
                 attackSpeed: 1,
