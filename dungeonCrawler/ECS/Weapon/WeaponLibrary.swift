@@ -37,7 +37,8 @@ enum WeaponType: CaseIterable {
                         effectiveRange: 400,
                         damage: 15,
                         spriteName: "normalHandgunBullet",
-                        collisionSize: SIMD2<Float>(6, 6)
+                        collisionSize: SIMD2<Float>(6, 6),
+                        hitEffects: []
                     ),
                 ],
                 anchorPoint: nil,
