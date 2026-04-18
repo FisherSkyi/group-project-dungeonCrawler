@@ -25,7 +25,7 @@ enum WeaponType: CaseIterable {
                 cooldown: TimeInterval(0.2),
                 attackSpeed: 1,
                 effects: [
-                    ConsumeManaEffect(amount: 5),
+                    CheckEnoughManaEffect(amount: 5),
                     SpawnProjectileEffect(
                         speed: 300,
                         effectiveRange: 400,
@@ -33,6 +33,7 @@ enum WeaponType: CaseIterable {
                         spriteName: "normalHandgunBullet",
                         collisionSize: SIMD2<Float>(6, 6)
                     ),
+                    ConsumeManaEffect(amount: 5),
                 ],
                 anchorPoint: nil,
                 initRotation: nil,
@@ -65,11 +66,12 @@ enum WeaponType: CaseIterable {
                 cooldown: TimeInterval(0.8),
                 attackSpeed: 1,
                 effects: [
-                    ConsumeManaEffect(amount: 20),
+                    CheckEnoughManaEffect(amount: 20),
                     SpawnProjectileEffect(
                         speed: 400, effectiveRange: 800,
                         damage: 50, spriteName: "normalHandgunBullet",
                         collisionSize: SIMD2<Float>(6, 6)),
+                    ConsumeManaEffect(amount: 20),
                 ],
                 anchorPoint: nil,
                 initRotation: nil,
@@ -83,7 +85,7 @@ enum WeaponType: CaseIterable {
                 cooldown: TimeInterval(1),
                 attackSpeed: 1,
                 effects: [
-                    ConsumeManaEffect(amount: 3),
+                    CheckEnoughManaEffect(amount: 3),
                     SpawnRocketEffect(
                         speed: 300,
                         damage: 80,
@@ -91,6 +93,7 @@ enum WeaponType: CaseIterable {
                         collisionSize: SIMD2<Float>(10, 10),
                         gravity: 200,
                         launchAngle: 0),
+                    ConsumeManaEffect(amount: 3),
                 ],
                 anchorPoint: nil,
                 initRotation: nil,
