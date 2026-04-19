@@ -14,7 +14,7 @@ public enum AnimationDirection: String, CaseIterable {
 
     /// Derives the nearest direction from a movement vector using 45° sectors.
     /// Returns `nil` if the vector is zero (caller should keep the previous direction).
-    public static func from(vector: SIMD2<Float>, threshold: Float = 0.5) -> AnimationDirection? {
+    public static func from(vector: SIMD2<Float>, threshold: Float = 0.01) -> AnimationDirection? {
         guard simd_length(vector) > threshold else { return nil }
         let angle = atan2f(vector.y, vector.x)
         let e = Float.pi / 8   // 22.5° per sector
