@@ -45,13 +45,8 @@ public final class SpriteKitRenderingAdapter: RenderingBackend {
         var flipFactor: CGFloat = node.xScale < 0 ? -1.0 : 1.0
         if hasDirectionalAnimation { // character
             flipFactor = 1.0
-        } else if let facing {
+        } else if let facing { // enemies
             flipFactor = facing.facing.isLeft ? -1.0 : 1.0
-        } else if let velocity, velocity.linear.x != 0 {
-            flipFactor = velocity.linear.x > 0 ? 1.0 : -1.0
-            if sprite.layer == RenderLayer.weaponBack || sprite.layer == RenderLayer.weaponFront {
-                sprite.layer = velocity.linear.x > 0 ? .weaponBack : .weaponFront
-            }
         }
 
         node.xScale = CGFloat(transform.scale) * flipFactor
