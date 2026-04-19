@@ -11,7 +11,7 @@ import simd
 /// Every frame, poses each primary weapon relative to its owner: position,
 /// rotation, facing, and sprite layer. Fire direction resolution lives in
 /// `WeaponAimResolver` so `WeaponSystem` can reuse the same rule when firing.
-public final class WeaponAimingSystem: System {
+public final class WeaponAnimationSystem: System {
     public var dependencies: [System.Type] { [InputSystem.self] }
 
     public init() {}
@@ -41,6 +41,7 @@ public final class WeaponAimingSystem: System {
             }
 
             let resolved = WeaponAimResolver.resolve(input: ownerInput, fallbackFacing: ownerFacing)
+
             let weaponFacing = resolved.facing
             let isLeft = weaponFacing.isLeft
             let aimAngle = atan2(resolved.direction.y, resolved.direction.x)

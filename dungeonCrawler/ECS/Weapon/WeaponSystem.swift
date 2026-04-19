@@ -2,7 +2,7 @@ import Foundation
 import simd
 
 public final class WeaponSystem: System {
-    public var dependencies: [System.Type] { [CollisionSystem.self, WeaponAimingSystem.self] }
+    public var dependencies: [System.Type] { [CollisionSystem.self, WeaponAnimationSystem.self] }
 
     private var gameTime: Float
 
