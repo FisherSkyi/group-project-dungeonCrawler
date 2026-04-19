@@ -19,7 +19,7 @@ struct MeleeDamageEffect: WeaponEffect {
     func apply(context: FireContext) -> FireEffectResult {
 
         let origin = context.firePosition
-        let facing = AnimationDirection.from(vector: context.fireDirection) ?? .right
+        let facing = context.world.getComponent(type: FacingComponent.self, for: context.weapon)?.facing ?? .right
         let directionSign: Float = facing.isLeft ? -1 : 1
         let amplitude = swingAngleDegrees * .pi / 180
         let baseRotation = context.world.getComponent(type: TransformComponent.self, for: context.weapon)?.rotation ?? 0
