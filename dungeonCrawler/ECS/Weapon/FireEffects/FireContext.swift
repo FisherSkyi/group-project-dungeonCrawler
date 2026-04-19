@@ -14,4 +14,5 @@ public struct FireContext {
     let firePosition: SIMD2<Float>
     let gameTime: Float
     let world: World
+    let delta: Float
 }
