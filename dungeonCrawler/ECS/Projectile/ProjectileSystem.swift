@@ -75,6 +75,19 @@ public final class ProjectileSystem: System {
             }
         }
 
+        for event in events.playerHitByEnemy {
+            let entity = event.enemy
+            guard world.isAlive(entity: entity),
+                  let projectileComponent = world.getComponent(type: ProjectileComponent.self, for: entity)
+            else { continue }
+            let pos = world.getComponent(type: TransformComponent.self, for: entity)?.position ?? .zero
+            let context = HitContext(center: pos, world: world, target: event.player)
+            for effect in projectileComponent.hitEffects {
+                effect.apply(context: context)
+            }
+            destructionQueue.enqueue(entity)
+        }
+
         destructionQueue.flush(world: world)
     }
 }

@@ -91,22 +91,16 @@ public final class CollisionSystem: System {
             return
         }
 
-        // Enemy-owned projectile hits the player
-        // Reuses the existing playerHitByEnemy event + DamageSystem iframes logic
         if aIsProjectile && bIsPlayer {
             let owner = world.getComponent(type: OwnerComponent.self, for: entityA)?.ownerEntity
             guard let owner, isEnemy(owner, world: world) else { return }
-            let damage = world.getComponent(type: ContactDamageComponent.self, for: entityA)?.damage ?? 0
-            events.recordPlayerHitByEnemy(player: entityB, enemy: entityA, damage: damage)
-            destructionQueue.enqueue(entityA)
+            events.recordPlayerHitByEnemy(player: entityB, enemy: entityA, damage: 0)
             return
         }
         if bIsProjectile && aIsPlayer {
             let owner = world.getComponent(type: OwnerComponent.self, for: entityB)?.ownerEntity
             guard let owner, isEnemy(owner, world: world) else { return }
-            let damage = world.getComponent(type: ContactDamageComponent.self, for: entityB)?.damage ?? 0
-            events.recordPlayerHitByEnemy(player: entityA, enemy: entityB, damage: damage)
-            destructionQueue.enqueue(entityB)
+            events.recordPlayerHitByEnemy(player: entityA, enemy: entityB, damage: 0)
             return
         }
 
