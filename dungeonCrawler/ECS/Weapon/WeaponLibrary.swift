@@ -15,6 +15,7 @@ enum WeaponType: CaseIterable {
     case sniper
     case bazooka
     case spellBook
+    case poisonBottle
 
     var baseDefinition: WeaponBase {
         switch self {
@@ -154,13 +155,14 @@ enum WeaponType: CaseIterable {
                 attackSpeed: 1,
                 effects: [
                     CheckEnoughAmmoEffect(),
-                    SpawnRocketEffect(
+                    SpawnParabolaProjectileEffect(
                         speed: 300,
                         damage: 80,
                         spriteName: "rocket",
                         collisionSize: SIMD2<Float>(10, 10),
                         gravity: 200,
                         launchAngle: 0,
+                        hitEffects: [SpawnZoneEffectsLibrary.fireZone.effect]
                         ),
                     ConsumeAmmoEffect()
                 ],
@@ -169,7 +171,29 @@ enum WeaponType: CaseIterable {
                 ammoConfig: AmmoConfig(magazineSize: 1, reloadTime: 3.0)
                 // ammoConfig intentionally nil — mana-gated only
             )
-        
+        case .poisonBottle:
+            WeaponBase(
+                textureName: "poisonBottle",
+                offset: SIMD2<Float>(10, -5),
+                scale: 0.6,
+                lastFiredAt: 0,
+                cooldown: TimeInterval(0.5),
+                attackSpeed: 1,
+                effects: [
+                    ConsumeManaEffect(amount: 15),
+                    SpawnParabolaProjectileEffect(
+                        speed: 100,
+                        damage: 80,
+                        spriteName: "poisonBottle",
+                        collisionSize: SIMD2<Float>(10, 10),
+                        gravity: 100,
+                        launchAngle: 0,
+                        hitEffects: [SpawnZoneEffectsLibrary.poisonZone.effect]
+                        ),
+                    ConsumeAmmoEffect()
+                ],
+                anchorPoint: nil,
+                initRotation: .pi / 9)
         }
     }
 }

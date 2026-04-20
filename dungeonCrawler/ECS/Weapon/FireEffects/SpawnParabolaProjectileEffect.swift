@@ -1,13 +1,14 @@
 import Foundation
 import simd
 
-struct SpawnRocketEffect: WeaponEffect {
+struct SpawnParabolaProjectileEffect: WeaponEffect {
     let speed: Float
     let damage: Float
     let spriteName: String
     let collisionSize: SIMD2<Float>
     let gravity: Float
     let launchAngle: Float
+    let hitEffects: [any ProjectileHitEffect]
 
     init(
         speed: Float,
@@ -15,7 +16,8 @@ struct SpawnRocketEffect: WeaponEffect {
         spriteName: String,
         collisionSize: SIMD2<Float>,
         gravity: Float = 300,
-        launchAngle: Float = 0
+        launchAngle: Float = 0,
+        hitEffects: [any ProjectileHitEffect] = []
     ) {
         self.speed = speed
         self.gravity = gravity
@@ -23,6 +25,7 @@ struct SpawnRocketEffect: WeaponEffect {
         self.damage = damage
         self.spriteName = spriteName
         self.collisionSize = collisionSize
+        self.hitEffects = hitEffects
     }
 
     func apply(context: FireContext) -> FireEffectResult {
@@ -54,7 +57,7 @@ struct SpawnRocketEffect: WeaponEffect {
             owner: context.owner,
             spriteName: spriteName,
             collisionBoxSize: collisionSize,
-            hitEffects: [SpawnZoneEffectsLibrary.fireZone.effect]
+            hitEffects: hitEffects
         ).make(in: context.world)
 
         context.world.addComponent(
