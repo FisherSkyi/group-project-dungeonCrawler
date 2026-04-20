@@ -54,7 +54,7 @@ struct SpawnRocketEffect: WeaponEffect {
             owner: context.owner,
             spriteName: spriteName,
             collisionBoxSize: collisionSize,
-            hitEffects: [SpawnZoneEffect(zoneBase: HitEffectsLibrary.fireZone.effectDefinition)]
+            hitEffects: [SpawnZoneEffectsLibrary.fireZone.effect]
         ).make(in: context.world)
 
         context.world.addComponent(

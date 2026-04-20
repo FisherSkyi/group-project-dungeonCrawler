@@ -9,13 +9,13 @@ import Foundation
 
 class ZoneComponent: Component {
     var radius: Float
-    var damagePerSecond: Float
+    var hitEffects: [any ProjectileHitEffect] = []
     var duration: Float
     var elapsed: Float = 0
     
-    init(radius: Float, damagePerSecond: Float, duration: Float, elapsed: Float) {
+    init(radius: Float, hitEffects: [any ProjectileHitEffect], duration: Float, elapsed: Float) {
         self.radius = radius
-        self.damagePerSecond = damagePerSecond
+        self.hitEffects = hitEffects
         self.duration = duration
         self.elapsed = elapsed
     }

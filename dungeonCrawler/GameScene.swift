@@ -150,7 +150,8 @@ class GameScene: SKScene {
         systemManager.register(HUDSystem(backend: hudBackend, joystickBackend: joystickBackend, commandQueues: commandQueues))
         systemManager.register(RenderSystem(backend: renderingBackend))
         systemManager.register(ProjectileSystem(events: collisionEvents, destructionQueue: destructionQueue))
-        systemManager.register(FireEffectsSystem(destructionQueue: destructionQueue))
+        systemManager.register(TintSystem())
+        systemManager.register(ZoneEffectsSystem(destructionQueue: destructionQueue))
         systemManager.register(SlowSystem())
     }
 

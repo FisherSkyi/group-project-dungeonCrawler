@@ -1,10 +1,3 @@
-//
-//  ProjectileSystem.swift
-//  dungeonCrawler
-//
-//  Created by Letian on 20/3/26.
-//
-
 import Foundation
 import simd
 
@@ -47,7 +40,7 @@ public final class ProjectileSystem: System {
             if rangeComponent.value.current <= 0 {
                 let pos = world.getComponent(type: TransformComponent.self, for: projectileEntity)?.position ?? .zero
                 destructionQueue.enqueue(projectileEntity)
-                let context = HitContext(center: pos, world: world, target: nil, zoneBase: nil)
+                let context = HitContext(center: pos, world: world, target: nil)
                 for effect in projectileComponent.hitEffects {
                     effect.apply(context: context)
                 }
@@ -63,7 +56,7 @@ public final class ProjectileSystem: System {
             destructionQueue.enqueue(entity)
             
             guard let projectileComponent = world.getComponent(type: ProjectileComponent.self, for: entity) else { continue }
-            let context = HitContext(center: pos, world: world, target: nil, zoneBase: nil)
+            let context = HitContext(center: pos, world: world, target: nil)
             for effect in projectileComponent.hitEffects {
                 effect.apply(context: context)
             }
@@ -76,7 +69,7 @@ public final class ProjectileSystem: System {
             guard world.isAlive(entity: entity) else { continue }
             let pos = world.getComponent(type: TransformComponent.self, for: entity)?.position ?? .zero
             guard let projectileComponent = world.getComponent(type: ProjectileComponent.self, for: entity) else { continue }
-            let context = HitContext(center: pos, world: world, target: event.enemy, zoneBase: nil)
+            let context = HitContext(center: pos, world: world, target: event.enemy)
             for effect in projectileComponent.hitEffects {
                 effect.apply(context: context)
             }
