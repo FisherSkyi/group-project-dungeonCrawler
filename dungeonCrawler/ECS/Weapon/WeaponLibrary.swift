@@ -134,7 +134,9 @@ enum WeaponType: CaseIterable {
                         damage: 30,
                         spriteName: "magicOrb",
                         collisionSize: SIMD2<Float>(8, 8),
-                        hitEffects: [SlowEffect(multiplier: 0.4, duration: 2.0)]
+                        hitEffects: [
+                            SlowEffect(multiplier: 0.4, duration: 2.0),
+                            TintEffect(duration: 2.0, newTint: TintLibrary.slowTint.tint)]
                     ),
                 ],
                 anchorPoint: nil,
@@ -158,7 +160,8 @@ enum WeaponType: CaseIterable {
                         spriteName: "rocket",
                         collisionSize: SIMD2<Float>(10, 10),
                         gravity: 200,
-                        launchAngle: 0),
+                        launchAngle: 0,
+                        ),
                     ConsumeAmmoEffect()
                 ],
                 anchorPoint: nil,

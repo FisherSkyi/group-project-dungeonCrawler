@@ -1,22 +1,31 @@
 import Foundation
 
 /// Spawns a persistent damage zone at the impact position.
-/// Carries its own ZoneBase so the caller never has to inject one through HitContext.
 public struct SpawnZoneEffect: ProjectileHitEffect {
-    public let zoneBase: ZoneBase
+    public let textureName: String
+    public let radius: Float
+    public let duration: Float
+    public let hitEffects: [any ProjectileHitEffect]
 
-    public init(zoneBase: ZoneBase) {
-        self.zoneBase = zoneBase
+    public init(
+        textureName: String,
+        radius: Float,
+        duration: Float,
+        hitEffects: [any ProjectileHitEffect]
+    ) {
+        self.textureName = textureName
+        self.radius = radius
+        self.duration = duration
+        self.hitEffects = hitEffects
     }
 
     public func apply(context: HitContext) {
         SpecialEffectZoneEntityFactory(
-            textureName: zoneBase.textureName,
-            radius: zoneBase.radius,
-            damagePerSecond: zoneBase.damagePerSecond,
-            duration: zoneBase.duration,
-            elapsed: 0,
-            position: context.center)
-            .make(in: context.world)
+            textureName: textureName,
+            radius: radius,
+            hitEffects: hitEffects,
+            duration: duration,
+            position: context.center
+        ).make(in: context.world)
     }
 }

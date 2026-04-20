@@ -14,9 +14,6 @@ import Foundation
 public final class SlowSystem: System {
     public var dependencies: [System.Type] { [] }
  
-    private let slowTint    = SIMD4<Float>(0.3, 0.6, 1.0, 1.0)
-    private let defaultTint = SIMD4<Float>(1.0, 1.0, 1.0, 1.0)
- 
     public init() {}
  
     public func update(deltaTime: Double, world: World) {
@@ -26,9 +23,6 @@ public final class SlowSystem: System {
             slow.remaining -= dt
             if slow.remaining <= 0 {
                 world.removeComponent(type: SlowComponent.self, from: entity)
-                world.getComponent(type: SpriteComponent.self, for: entity)?.tint = defaultTint
-            } else {
-                world.getComponent(type: SpriteComponent.self, for: entity)?.tint = slowTint
             }
         }
     }
