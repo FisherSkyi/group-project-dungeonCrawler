@@ -9,11 +9,18 @@ import Foundation
 
 public enum HitEffectsLibrary {
     case fireZone
+    case poisonZone
     public var effectDefinition: ZoneBase {
         switch self {
         case .fireZone:
             ZoneBase(
                 textureName: "firearea",
+                radius: 200,
+                damagePerSecond: 20,
+                duration: 3)
+        case .poisonZone:
+            ZoneBase(
+                textureName: "poisonArea",
                 radius: 200,
                 damagePerSecond: 20,
                 duration: 3)
