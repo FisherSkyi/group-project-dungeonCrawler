@@ -36,7 +36,7 @@ public final class CollisionEventBuffer {
     public private(set) var projectileHitSolid: [ProjectileHitSolidEvent] = []
     public private(set) var playerHitByEnemy: [PlayerHitByEnemyEvent] = []
     public private(set) var projectileHitEnemy: [ProjectileHitEnemyEvent] = []
- 
+
     /// Called once at the top of CollisionSystem.update to discard last frame's events.
     public func clear() {
         projectileHitSolid.removeAll(keepingCapacity: true)

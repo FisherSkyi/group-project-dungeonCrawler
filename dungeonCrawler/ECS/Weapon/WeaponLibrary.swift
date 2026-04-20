@@ -37,10 +37,11 @@ enum WeaponType: CaseIterable {
                     SpawnLinearProjectileEffect(
                         speed: 300,
                         effectiveRange: 400,
-                        damage: 15,
                         spriteName: "normalHandgunBullet",
                         collisionSize: SIMD2<Float>(6, 6),
-                        hitEffects: []
+                        hitEffects: [
+                            DamageEffect(amount: 15)
+                        ]
                     ),
                 ],
                 anchorPoint: nil,
@@ -60,9 +61,11 @@ enum WeaponType: CaseIterable {
                     ConsumeAmmoEffect(),
                     SpawnLinearProjectileEffect(
                         speed: 400, effectiveRange: 800,
-                        damage: 50, spriteName: "normalHandgunBullet",
+                        spriteName: "normalHandgunBullet",
                         collisionSize: SIMD2<Float>(6, 6),
-                        hitEffects: []
+                        hitEffects: [
+                            DamageEffect(amount: 50)
+                        ]
                     ),
                 ],
                 anchorPoint: nil,
@@ -132,12 +135,13 @@ enum WeaponType: CaseIterable {
                     SpawnLinearProjectileEffect(
                         speed: 250,
                         effectiveRange: 500,
-                        damage: 30,
                         spriteName: "magicOrb",
                         collisionSize: SIMD2<Float>(8, 8),
                         hitEffects: [
+                            DamageEffect(amount: 30),
                             SlowEffect(multiplier: 0.4, duration: 2.0),
-                            TintEffect(duration: 2.0, newTint: TintLibrary.slowTint.tint)]
+                            TintEffect(duration: 2.0, newTint: TintLibrary.slowTint.tint)
+                        ]
                     ),
                 ],
                 anchorPoint: nil,
@@ -157,12 +161,14 @@ enum WeaponType: CaseIterable {
                     CheckEnoughAmmoEffect(),
                     SpawnParabolaProjectileEffect(
                         speed: 300,
-                        damage: 80,
                         spriteName: "rocket",
                         collisionSize: SIMD2<Float>(10, 10),
                         gravity: 200,
                         launchAngle: 0,
-                        hitEffects: [SpawnZoneEffectsLibrary.fireZone.effect]
+                        hitEffects: [
+                            DamageEffect(amount: 80),
+                            SpawnZoneEffectsLibrary.fireZone.effect
+                        ]
                         ),
                     ConsumeAmmoEffect()
                 ],
@@ -183,12 +189,13 @@ enum WeaponType: CaseIterable {
                     CheckEnoughManaEffect(amount: 6),
                     SpawnParabolaProjectileEffect(
                         speed: 300,
-                        damage: 0,
                         spriteName: "poisonBottle",
                         collisionSize: SIMD2<Float>(10, 10),
                         gravity: 300,
                         launchAngle: 0,
-                        hitEffects: [SpawnZoneEffectsLibrary.poisonZone.effect],
+                        hitEffects: [
+                            SpawnZoneEffectsLibrary.poisonZone.effect
+                        ],
                         scale: 0.6
                         ),
                     ConsumeManaEffect(amount: 6),
